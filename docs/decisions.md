@@ -20,22 +20,20 @@ Approved 2026-11-16 (recommended defaults from the v1 audit).
 
 ## Phase plan
 
-| Phase | Scope | Depends on |
-|---|---|---|
-| P0 | Monorepo, Docker Compose (Postgres+pgvector, Redis), FastAPI skeleton, Alembic, CI | — |
-| P1 | Auth, RBAC, profiles | P0 |
-| P2 | Taxonomy seed, ingestion framework, real data sources, dedup | P0 |
-| P3 | Extraction v2 with labelled evaluation set | P2 |
-| P4 | Market APIs, Next.js shell, market and student dashboards | P1, P3 |
-| P5 | Curriculum intelligence | P3 |
-| P6 | Gap analysis | P4, P5 |
-| P7 | Resume intelligence | P1, P3 |
-| P8 | Semantic job matching | P3, P7 |
-| P9 | Roadmaps | P6, P7 |
-| P10 | Forecasting | P2, P4 |
-| P11 | RAG career assistant | P6, P9 |
-| P12 | Admin dashboard | from P2, extended per phase |
-| P13 | Hardening, load test, AWS deployment | all |
+The phase plan, its status and completion criteria live in [ROADMAP.md](../ROADMAP.md)
+(Phases 0–7), which supersedes the 14-step plan (P0–P13) proposed in the initial audit.
+How the audit's steps map onto the roadmap:
+
+| Roadmap phase | Audit steps folded in |
+|---|---|
+| 0 Infrastructure and project setup | P0 |
+| 1 Stabilize existing V1 functionality | P2 ingestion, P3 extraction, P5 curriculum, P6 gap analysis, market APIs from P4 |
+| 2 Authentication and student profiles | P1 |
+| 3 Resume intelligence and semantic job matching | P7, P8 |
+| 4 Personalized learning roadmaps | P9 |
+| 5 Demand forecasting and RAG career assistant | P10, P11 |
+| 6 Next.js frontend and complete integration | frontend from P4, P12 admin dashboard |
+| 7 Testing, security and deployment | P13 |
 
 ## P0 conventions
 

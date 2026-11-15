@@ -5,14 +5,14 @@ extraction, curriculum intelligence, resume analysis, semantic job matching, per
 roadmaps, demand forecasting and a RAG career assistant.
 
 > Status: **Phase 0 (foundation)**. The v1 Dash/SQLite app is frozen in [`legacy/`](legacy/NOTICE.md).
-> Architecture decisions: [`docs/decisions.md`](docs/decisions.md).
+> Progress and phase plan: [`ROADMAP.md`](ROADMAP.md) · Architecture decisions: [`docs/decisions.md`](docs/decisions.md).
 
 ## Repository layout
 
 ```
 apps/api/        FastAPI backend + Celery workers (Python 3.12)
-apps/web/        Next.js frontend (from Phase 4)
-packages/ml/     Shared ML package (from Phase 2)
+apps/web/        Next.js frontend (Phase 6)
+packages/ml/     Shared ML package (when introduced)
 docs/            Architecture decisions, API and schema docs
 legacy/          Frozen v1, reference only
 ```
