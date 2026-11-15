@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: skill_gap_radar_app
+    ports:
+      - "8000:8000" # FastAPI REST API
+      - "8050:8050" # Plotly Dash Dashboard
+    volumes:
+      - sqlite_data:/app/app/data
+    environment:
+      - RADAR_ENV=production
+      - RADAR_API_HOST=0.0.0.0
+      - RADAR_API_PORT=8000
+      - RADAR_DASH_PORT=8050
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+    driver: local
