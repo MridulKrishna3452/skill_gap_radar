@@ -10,7 +10,7 @@ Architecture decisions (data sources, LLM, auth, infrastructure): [docs/decision
 
 | Phase | Name | Status | Depends on |
 |---|---|---|---|
-| 0 | Infrastructure and project setup | 🟡 In progress — awaiting Docker verification | — |
+| 0 | Infrastructure and project setup | 🟡 In progress — local checks pass; CI run pending (needs GitHub remote) | — |
 | 1 | Stabilize existing V1 functionality | ⚪ Not started | 0 |
 | 2 | Authentication and student profiles | ⚪ Not started | 0, 1 |
 | 3 | Resume intelligence and semantic job matching | ⚪ Not started | 1, 2 |
@@ -86,15 +86,27 @@ local stack, database migrations, background workers and CI.
 - [x] Celery app and `system.ping` task.
 - [x] Dockerfile (multi-stage, non-root) and Compose stack.
 - [x] CI workflow defined.
-- [x] Ruff, mypy and unit tests pass locally (20 passed).
-- [ ] `docker compose up --build` verified locally; `/api/v1/health/ready` returns 200.
-- [ ] Integration tests pass (`RUN_INTEGRATION=1 pytest`) against the Compose services.
-- [ ] Alembic upgrade → downgrade → upgrade verified against a real database.
-- [ ] Worker processes `system.ping` from the running stack.
+- [x] Ruff, mypy and unit tests pass locally (20 unit tests).
+- [x] `docker compose up --build` verified locally; `/api/v1/health/ready` returns 200
+      (database ok, redis ok); all services healthy, `migrate` exits 0. *(2026-11-18)*
+- [x] Integration tests pass (`RUN_INTEGRATION=1 pytest`) against the Compose services:
+      23 passed (20 unit + 3 integration). *(2026-11-18)*
+- [x] Alembic upgrade → downgrade → upgrade verified against a real database; ends at
+      `0001 (head)`; Postgres 17.12 with `vector` 0.8.7 and `pg_trgm` 1.6. *(2026-11-16)*
+- [x] Worker processes `system.ping` from the running stack (task received and succeeded
+      in worker logs). *(2026-11-18)*
 - [ ] CI run green on GitHub (requires a remote).
 
-**Notes.** Initial commit `df10e63`. Local Docker daemon was not running during the build, so
-the unchecked items still need verification.
+**Notes.**
+- Initial commit `df10e63`. Local verification completed 2026-11-18; container logs show no
+  errors (only Postgres's standard notice that socket connections inside the container are
+  trusted; network connections require the password).
+- Fixes found during verification: the Compose host ports clashed with a Postgres (5432) and
+  Redis (6379) installed natively on the dev machine, so host ports are now configurable and
+  default to 5433 / 6380. Host URLs use `127.0.0.1` because on Windows `localhost` resolves to
+  IPv6 `::1` first, adding ~2 s per connection and tripping the readiness timeout. Settings
+  also read the repo-root `.env` when run from `apps/api`.
+- Remaining: a green CI run, which needs the repository pushed to GitHub.
 
 ---
 
@@ -394,3 +406,4 @@ update, load-test scripts and results, public demo URL.
 | Date | Change |
 |---|---|
 | 2026-11-16 | Roadmap created (Phases 0–7). Phase 0 build committed in `df10e63`; Docker verification pending. |
+| 2026-11-18 | Phase 0 verified locally: Compose stack healthy, migrations round trip, 23 tests pass, worker ping. Fixed host-port clash and Windows `localhost` delay. Only the CI run remains. |

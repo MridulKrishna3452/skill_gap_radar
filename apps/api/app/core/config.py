@@ -13,7 +13,9 @@ MIN_JWT_SECRET_LENGTH = 32
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # Repo-root .env (shared with docker compose), then an optional apps/api/.env override.
+        # Neither file exists inside the container, where config comes from the environment.
+        env_file=("../../.env", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -24,11 +26,12 @@ class Settings(BaseSettings):
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     API_PREFIX: str = "/api/v1"
 
-    DATABASE_URL: str = "postgresql+asyncpg://skillradar:skillradar@localhost:5432/skillradar"
+    # Defaults match the docker compose host ports (see .env.example).
+    DATABASE_URL: str = "postgresql+asyncpg://skillradar:skillradar@127.0.0.1:5433/skillradar"
     DB_POOL_SIZE: int = Field(default=5, ge=1, le=50)
     DB_MAX_OVERFLOW: int = Field(default=10, ge=0, le=100)
 
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = "redis://127.0.0.1:6380/0"
 
     # NoDecode: accept a plain comma-separated string instead of JSON.
     CORS_ORIGINS: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
