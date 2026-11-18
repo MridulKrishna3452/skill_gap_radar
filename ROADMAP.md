@@ -11,7 +11,7 @@ Architecture decisions (data sources, LLM, auth, infrastructure): [docs/decision
 | Phase | Name | Status | Depends on |
 |---|---|---|---|
 | 0 | Infrastructure and project setup | 🟡 In progress — local checks pass; CI run pending (needs GitHub remote) | — |
-| 1 | Stabilize existing V1 functionality | ⚪ Not started | 0 |
+| 1 | Stabilize existing V1 functionality | 🟡 In progress — built, tested, real Adzuna data loaded; needs syllabus PDF, labelled set, CI run | 0 |
 | 2 | Authentication and student profiles | ⚪ Not started | 0, 1 |
 | 3 | Resume intelligence and semantic job matching | ⚪ Not started | 1, 2 |
 | 4 | Personalized learning roadmaps | ⚪ Not started | 1, 2, 3 |
@@ -156,13 +156,52 @@ labelled extraction evaluation set in `data/eval_sets/`.
 
 **Completion criteria**
 - [ ] Every v1 feature in `docs/v1-parity.md` has a working, tested 2.0 equivalent.
-- [ ] At least one real data source ingests successfully; no synthetic records in analytics.
-- [ ] Re-running ingestion or re-uploading a curriculum creates no duplicates.
+      *Met for the Phase 1 scope: every data, analytics and API feature is done and tested
+      (test names in the parity doc). Two v1 features are scheduled later by this roadmap: the
+      resume analyser (Phase 3) and the Dash pages (Phase 6; their data is served by Phase 1
+      endpoints). Owner to confirm this reading before ticking.*
+- [x] At least one real data source ingests successfully; no synthetic records in analytics.
+      *Adzuna (India), 2026-11-18: 10 runs via `POST /ingestion/runs` (9 role searches, last 90
+      days, 5 pages each, plus one 2-page test) stored 2,151 real postings, 99 duplicates
+      skipped, all extracted. Two runs were `partial` because Adzuna returned HTTP 503 on one
+      page after 3 attempts each. No synthetic sources exist; synthetic exclusion is tested in
+      `test_synthetic_sources_are_excluded_from_analytics`.*
+- [x] Re-running ingestion or re-uploading a curriculum creates no duplicates.
+      *`test_adzuna_ingestion_end_to_end_and_idempotent` (re-run: 0 inserted, 60 duplicates),
+      `test_cross_source_duplicate_content_is_skipped`,
+      `test_curriculum_upload_parse_and_no_duplicates`. (2026-11-18)*
 - [ ] Extraction F1 measured on a labelled set of at least 100 postings and recorded here.
-- [ ] Gap and coverage numbers verified against hand-computed fixtures.
-- [ ] Each v1 bug in `legacy/NOTICE.md` has a regression test that passes.
-- [ ] `docs/schema.md` documents all tables; endpoints documented in OpenAPI.
+      *Tooling done (`export-eval-sample`, `eval-extraction`, calibration; guide in
+      `data/eval_sets/README.md`). **Not met:** needs real postings, then labelling by hand.*
+- [x] Gap and coverage numbers verified against hand-computed fixtures.
+      *`test_gap_math.py`, `test_coverage.py`, `test_trends.py`; end to end through the API in
+      `test_gap_matches_hand_computed_values` and `test_gap_by_role`. (2026-11-18)*
+- [x] Each v1 bug in `legacy/NOTICE.md` has a regression test that passes.
+      *Mapped in `docs/v1-parity.md`: `test_v1_regressions.py` (bugs 1, 2, 3, 5) and
+      `test_gap_math.py::test_regression_v1_coverage_bias` (bug 4). (2026-11-18)*
+- [x] `docs/schema.md` documents all tables; endpoints documented in OpenAPI.
+      *All 18 tables in `docs/schema.md`; 25 paths in `/api/v1/openapi.json`, each with a
+      summary and typed response model. (2026-11-18)*
 - [ ] Phase gate checklist passed.
+      *Local gate items pass (ruff, format, mypy, 169 tests with `RUN_INTEGRATION=1`,
+      migrations up/down/up, `docker compose up --build` healthy with the worker running the
+      new tasks). Open: CI run on GitHub, and the two real-data criteria above.*
+
+**Notes.**
+- Started 2026-11-18 on the owner's instruction while Phase 0's last item (a green CI run on
+  GitHub) was still open; that item and this phase's CI run can be closed together.
+- Design choices (taxonomy changes from v1, disambiguation rules, coverage grades, gap and
+  priority formulas, analysis window, low-sample flags): `docs/decisions.md`, "Phase 1 design
+  choices".
+- Data caveats: shares are relative to the postings fetched, and those were chosen by search
+  terms, so they describe this sample, not the whole Indian job market. Adzuna gives description
+  snippets: 788 of 2,151 postings (37 %) mention no taxonomy skill. November 2026 is a partial
+  month. 179 postings match no role.
+- Owner inputs needed to finish: (1) ~~Adzuna key~~ done 2026-11-18; (2) at least one
+  real syllabus PDF; (3) labelling ≥ 100 exported postings (or approval for a labelling
+  process), after which the F1 is recorded here and the CI gate threshold agreed.
+- Confidence values are uncalibrated priors until step (3) (`calibration.json` says
+  `status: prior`).
 
 ---
 
@@ -407,3 +446,5 @@ update, load-test scripts and results, public demo URL.
 |---|---|
 | 2026-11-16 | Roadmap created (Phases 0–7). Phase 0 build committed in `df10e63`; Docker verification pending. |
 | 2026-11-18 | Phase 0 verified locally: Compose stack healthy, migrations round trip, 23 tests pass, worker ping. Fixed host-port clash and Windows `localhost` delay. Only the CI run remains. |
+| 2026-11-18 | Phase 1 started on owner instruction. Built: migration `0002` (18 tables), taxonomy seed (110 skills / 467 aliases / 14 roles), Adzuna + file ingestion with run tracking and dedup, extraction v2, curriculum parser + graded coverage, demand series, gap (+ by role), trends, recommendations, 25 API paths, Celery tasks, CLI, `docs/schema.md`, `docs/v1-parity.md`. 169 tests pass (148 unit, 21 integration). 4 of 8 criteria met; remaining ones need the Adzuna key, a real syllabus, labelled postings and a CI run. |
+| 2026-11-18 | First real data: Adzuna key configured (in `.env` only), 2,151 real postings ingested and extracted. 5 of 8 Phase 1 criteria met. |

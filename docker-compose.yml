@@ -9,6 +9,8 @@ x-api-env: &api-env
   REDIS_URL: redis://redis:6379/0
   CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
   JWT_SECRET: ${JWT_SECRET:-}
+  ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+  ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
 
 services:
   db:
@@ -44,7 +46,8 @@ services:
 
   migrate:
     build: ./apps/api
-    command: ["alembic", "upgrade", "head"]
+    # Migrate, then load reference data (taxonomy, roles, sources). Both are idempotent.
+    command: ["sh", "-c", "alembic upgrade head && python -m app.cli seed"]
     environment: *api-env
     depends_on:
       db:

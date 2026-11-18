@@ -63,8 +63,21 @@ jobs:
           alembic upgrade head
           alembic downgrade base
           alembic upgrade head
+      - name: Seed reference data
+        run: python -m app.cli seed
       - name: Tests
         run: pytest -q
+      - name: Extraction evaluation gate
+        # Runs once the labelled set exists (see data/eval_sets/README.md). The F1 threshold is
+        # agreed after the baseline is measured and recorded in ROADMAP.md.
+        run: |
+          if [ -f ../../data/eval_sets/extraction_v1.jsonl ]; then
+            python -m app.cli eval-extraction \
+              --path ../../data/eval_sets/extraction_v1.jsonl \
+              --min-f1 "${EXTRACTION_MIN_F1:-0}"
+          else
+            echo "No labelled extraction set yet; gate skipped."
+          fi
 
   api-image:
     name: API - Docker build
