@@ -49,3 +49,7 @@ def configure_logging(level: str, *, json_output: bool) -> None:
 
     # Uvicorn's access log duplicates our request logging and would log raw query strings.
     logging.getLogger("uvicorn.access").disabled = True
+    # httpx logs every request URL at INFO. Adzuna takes its API key as a query parameter,
+    # so those lines would leak the key into logs.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)

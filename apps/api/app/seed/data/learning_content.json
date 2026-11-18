@@ -1,0 +1,380 @@
+{
+  "_comment": "Curated learning text carried over verbatim from v1 (legacy/app/recommendation/engine.py, skill_learning_details). Editorial content, labelled content_source=editorial:v1 wherever it is shown.",
+  "content_source": "editorial:v1",
+  "items": [
+    {
+      "skill": "python",
+      "difficulty": "Beginner",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Syntax and Core Types",
+        "Object-Oriented Programming",
+        "File I/O and Decorators",
+        "Testing and Debugging"
+      ]
+    },
+    {
+      "skill": "sql",
+      "difficulty": "Beginner",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "Basic Queries (SELECT, WHERE)",
+        "Joins and Aggregations",
+        "Subqueries & Window Functions",
+        "Index Optimization"
+      ]
+    },
+    {
+      "skill": "docker",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "Containers vs VMs",
+        "Writing Dockerfiles",
+        "Volume and Network Mapping",
+        "Multi-container with Compose"
+      ]
+    },
+    {
+      "skill": "kubernetes",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "K8s Architecture (Pods, Nodes)",
+        "Deployments and Services",
+        "ConfigMaps and Secrets",
+        "Helm Charts & Ingress Controllers"
+      ]
+    },
+    {
+      "skill": "aws",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "IAM Security and VPCs",
+        "EC2 Compute and S3 Storage",
+        "Serverless with Lambda & RDS",
+        "CloudWatch Monitoring"
+      ]
+    },
+    {
+      "skill": "azure",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Azure Active Directory & VNets",
+        "Virtual Machines & Blob Storage",
+        "Azure Functions & SQL Database",
+        "Resource Manager Templates"
+      ]
+    },
+    {
+      "skill": "gcp",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "IAM & VPC Networks",
+        "Compute Engine & Cloud Storage",
+        "BigQuery Analytics & Cloud Functions",
+        "Google Kubernetes Engine"
+      ]
+    },
+    {
+      "skill": "spark",
+      "difficulty": "Advanced",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Spark Architecture (Driver/Executors)",
+        "Resilient Distributed Datasets (RDD)",
+        "DataFrames & Spark SQL",
+        "Optimizing Shuffles & Partitions"
+      ]
+    },
+    {
+      "skill": "pyspark",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "PySpark Shell and Setup",
+        "Data Ingestion & Cleaning",
+        "SQL Queries in PySpark",
+        "Spark MLlib overview"
+      ]
+    },
+    {
+      "skill": "hadoop",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "HDFS Architecture & Commands",
+        "MapReduce Java/Python scripts",
+        "YARN Resource Management",
+        "Hive & Pig Query integrations"
+      ]
+    },
+    {
+      "skill": "airflow",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "DAG structure and operators",
+        "Scheduling & Triggering DAGs",
+        "Variables and Connections",
+        "Airflow Tasks & Executors"
+      ]
+    },
+    {
+      "skill": "terraform",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Infrastructure as Code concepts",
+        "Providers and Resources",
+        "State Management & Locking",
+        "Modules and Workspaces"
+      ]
+    },
+    {
+      "skill": "linux",
+      "difficulty": "Beginner",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "Terminal commands & File system",
+        "User Permissions & SSH keys",
+        "Bash shell scripting",
+        "Process management & Cron jobs"
+      ]
+    },
+    {
+      "skill": "git",
+      "difficulty": "Beginner",
+      "estimated_weeks": 1.0,
+      "steps": [
+        "Git Init, Add, Commit",
+        "Branching and Merging",
+        "Resolving Conflicts",
+        "GitHub Pull Requests & workflows"
+      ]
+    },
+    {
+      "skill": "rest-api",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "HTTP Methods (GET, POST)",
+        "JSON payloads & status codes",
+        "API Routing & Middleware",
+        "Authentication (JWT / API Keys)"
+      ]
+    },
+    {
+      "skill": "langchain",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "Prompts, Models, Output Parsers",
+        "Chains and Expression Language",
+        "Retrieval Augmented Generation (RAG)",
+        "Building Agents and Memory"
+      ]
+    },
+    {
+      "skill": "llms",
+      "difficulty": "Advanced",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Transformer Architectures",
+        "Tokenization & Context Windows",
+        "Prompt Engineering techniques",
+        "Parameter-Efficient Fine-Tuning"
+      ]
+    },
+    {
+      "skill": "tensorflow",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Tensors and Operations",
+        "Keras Sequential API",
+        "Custom Layers and Training Loops",
+        "TensorBoard Visualization"
+      ]
+    },
+    {
+      "skill": "pytorch",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Tensors and autograd",
+        "nn.Module architecture",
+        "DataLoaders & Custom Datasets",
+        "Distributed model training"
+      ]
+    },
+    {
+      "skill": "react",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "JSX and Components",
+        "State and Props (useState, useEffect)",
+        "Context API and Redux",
+        "React Router & Form Handling"
+      ]
+    },
+    {
+      "skill": "angular",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "TypeScript & Components",
+        "Directives and Pipes",
+        "Services & Dependency Injection",
+        "RxJS Observables & Routing"
+      ]
+    },
+    {
+      "skill": "nodejs",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Node.js Event Loop",
+        "Express framework routing",
+        "Asynchronous coding (Promises, async/await)",
+        "NPM package management"
+      ]
+    },
+    {
+      "skill": "mongodb",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "NoSQL Document schemas",
+        "CRUD queries & Aggregations",
+        "Indexing & Sharding",
+        "Mongoose ORM integration"
+      ]
+    },
+    {
+      "skill": "redis",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 1.0,
+      "steps": [
+        "Caching strategies",
+        "Redis Data Structures",
+        "Pub/Sub Messaging",
+        "Redis Persistence & Clustering"
+      ]
+    },
+    {
+      "skill": "kafka",
+      "difficulty": "Advanced",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Event streaming concepts",
+        "Producers, Consumers, Brokers",
+        "Kafka Topics & Partitions",
+        "Kafka Streams & Connect"
+      ]
+    },
+    {
+      "skill": "snowflake",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "Snowflake Architecture",
+        "Virtual Warehouses scaling",
+        "Data Sharing & Snowpipe",
+        "Time Travel and Cloning"
+      ]
+    },
+    {
+      "skill": "databricks",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "Databricks Notebooks & Workspace",
+        "Delta Lake Lakehouse tables",
+        "PySpark optimization",
+        "Databricks Jobs workflows"
+      ]
+    },
+    {
+      "skill": "system-design",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Scalability & High Availability",
+        "Load Balancing & Reverse Proxies",
+        "Database Sharding & Replication",
+        "Microservices Architecture"
+      ]
+    },
+    {
+      "skill": "ci-cd",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 2.0,
+      "steps": [
+        "CI/CD Principles",
+        "GitHub Actions workflows",
+        "Build runners and artifacts",
+        "Automated deployment triggers"
+      ]
+    },
+    {
+      "skill": "devops",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Infrastructure automation",
+        "Monitoring and Alerting",
+        "Container orchestration",
+        "Security auditing & compliance"
+      ]
+    },
+    {
+      "skill": "machine-learning",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Feature Engineering & Scaling",
+        "Scikit-Learn models",
+        "Cross-validation & Hyperparameters",
+        "Metrics: Precision, Recall, ROC"
+      ]
+    },
+    {
+      "skill": "deep-learning",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "Feedforward Networks",
+        "CNNs for Computer Vision",
+        "RNNs & LSTMs for sequences",
+        "Generative Adversarial Networks"
+      ]
+    },
+    {
+      "skill": "nlp",
+      "difficulty": "Intermediate",
+      "estimated_weeks": 3.0,
+      "steps": [
+        "Tokenization & Lemmatization",
+        "Named Entity Recognition (NER)",
+        "TF-IDF and Vector models",
+        "HuggingFace Transformers"
+      ]
+    },
+    {
+      "skill": "generative-ai",
+      "difficulty": "Advanced",
+      "estimated_weeks": 4.0,
+      "steps": [
+        "RAG Architecture",
+        "Vector Databases (Chroma/Pinecone)",
+        "Semantic search & chunking",
+        "AI Agent frameworks"
+      ]
+    }
+  ]
+}

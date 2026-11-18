@@ -41,6 +41,27 @@ class Settings(BaseSettings):
     # Timeout for dependency checks in /health/ready, in seconds.
     HEALTHCHECK_TIMEOUT: float = Field(default=2.0, gt=0, le=10)
 
+    # Adzuna job search API (https://developer.adzuna.com). Empty = connector disabled.
+    ADZUNA_APP_ID: str = ""
+    ADZUNA_APP_KEY: SecretStr = SecretStr("")
+    ADZUNA_BASE_URL: str = "https://api.adzuna.com/v1/api"
+    # Free-tier keys allow a limited number of calls per minute; stay well under it.
+    ADZUNA_MIN_SECONDS_BETWEEN_CALLS: float = Field(default=3.0, ge=0)
+    ADZUNA_MAX_PAGES_PER_RUN: int = Field(default=20, ge=1, le=200)
+
+    # Curriculum uploads.
+    CURRICULUM_MAX_BYTES: int = Field(default=15 * 1024 * 1024, ge=1024)
+    CURRICULUM_MAX_PAGES: int = Field(default=300, ge=1)
+
+    # Analytics defaults.
+    ANALYTICS_DEFAULT_WINDOW_MONTHS: int = Field(default=6, ge=1, le=60)
+    # Below this many postings in a window, demand-based numbers are flagged as low-sample.
+    ANALYTICS_MIN_POSTINGS: int = Field(default=30, ge=1)
+
+    @property
+    def adzuna_enabled(self) -> bool:
+        return bool(self.ADZUNA_APP_ID and self.ADZUNA_APP_KEY.get_secret_value())
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def _split_origins(cls, value: object) -> object:

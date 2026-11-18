@@ -18,13 +18,17 @@ dependencies = [
     "pgvector>=0.3,<1",
     "redis>=5.2,<7",
     "celery[redis]>=5.4,<6",
+    "httpx>=0.28,<1",
+    "python-multipart>=0.0.20,<1",
+    "spacy>=3.8,<4",
+    "pymupdf>=1.25,<2",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3,<9",
     "pytest-asyncio>=0.25,<1",
-    "httpx>=0.28,<1",
+    "respx>=0.22,<1",
     "ruff>=0.9,<1",
     "mypy>=1.14,<2",
     "celery-types>=0.22",
@@ -44,6 +48,11 @@ ignore = ["B008"]  # FastAPI's Depends() in defaults is idiomatic
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
+# Operator CLI: one-shot commands where blocking file I/O and non-crypto randomness are fine.
+"app/cli.py" = ["ASYNC230", "ASYNC240", "S311", "T201"]
+# Syllabi and job ads use en dashes as separators ("Unit 1 – Basics"); matching them is intended.
+"app/services/curriculum/parser.py" = ["RUF001"]
+"app/services/extraction/extractor.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.12"

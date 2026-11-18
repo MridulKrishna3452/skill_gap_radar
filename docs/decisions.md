@@ -46,3 +46,39 @@ How the audit's steps map onto the roadmap:
 - Health: `/api/v1/health/live` (process only) and `/api/v1/health/ready` (Postgres + Redis,
   503 if either is down).
 - Migrations are the only way the schema changes; CI runs upgrade, downgrade, upgrade.
+
+## Phase 1 design choices
+
+Made while building Phase 1 (2026-11-18). Each is documented in code next to where it applies.
+
+- **Taxonomy.** 110 curated tech skills, 467 aliases, seeded from v1's alias dictionary. v1
+  aliases that were too broad became child skills with a parent (PostgreSQL → SQL, Helm →
+  Kubernetes, PySpark → Spark); a mention of a child counts as implied evidence for the parent.
+  Some v1 mappings were corrected rather than kept: `bash` / shell scripting is its own skill
+  (v1 counted it as Linux); `py`, `tf` as Terraform, `hcl`, `yarn`, `pig`, `iam`, `adf`,
+  `rails`, `containers` and bare `algorithms` were dropped or made context-dependent because
+  they produce false matches. ESCO is linked by exact label match only (`import-esco`); no ESCO
+  URI is ever typed by hand.
+- **Ambiguous aliases** ("go", "react", "lambda", "spark", "excel", "R", "C", …) need
+  supporting context (a context word nearby, a delimited skill list, or the exact case form
+  next to another skill) and are rejected by negative cues ("go to", "react quickly").
+- **Confidence** is a per-rule value in `calibration.json`. Until the labelled set exists the
+  values are priors, and the file says so (`status: prior`).
+- **Requirement level** comes from section headers and sentence cues; when a sentence has both
+  required and nice-to-have cues, nice-to-have wins.
+- **Coverage grades** (0–1): unit title 1.0, course title 0.8, content 0.5 / 0.6 / 0.7 for 1 /
+  2 / 3+ mentions, outcomes only 0.4. Program coverage = the best unit. A heuristic, documented
+  as one.
+- **Gap**: per skill `demand_share × (1 − coverage)`; summary = demand-weighted coverage over all
+  demanded skills, plus mean coverage of the top-N skills **by demand** (fixes v1's bias).
+- **Window**: the last 6 whole months ending at the latest month with data (or `as_of`).
+  Results with fewer than 30 postings are flagged `low_sample`; trend movers are not computed
+  then, and recommendation priority is `insufficient_data`.
+- **Recommendation priority** from the role's demand share: high ≥ 30 %, medium ≥ 10 %, else
+  low. Replaces v1's fixed mention-count cut-offs.
+- **Curriculum versions**: a program has one current curriculum. Re-uploading identical bytes is
+  a no-op; a new file replaces the courses when it parses; the old document is marked
+  `superseded`. PDFs are stored in Postgres so API and worker need no shared volume.
+- **Adzuna descriptions are snippets** (a few hundred characters), so extraction on Adzuna
+  postings sees part of each ad. Recorded on the source's licence note and here; the eval set
+  should be drawn from the same data so the measured F1 reflects it.

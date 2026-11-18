@@ -1,0 +1,13 @@
+{
+  "_comment": "Confidence per evidence rule. status=prior means these are hand-set starting values, NOT yet calibrated. Run `python -m app.cli eval-extraction --calibrate` on the labelled set in data/eval_sets/ to replace them with measured precision per rule (status=calibrated).",
+  "status": "prior",
+  "measured_on": null,
+  "rules": {
+    "exact_alias:title": 0.95,
+    "exact_alias:description": 0.9,
+    "exact_alias:other": 0.9,
+    "context_term": 0.8,
+    "skill_list": 0.75,
+    "case_and_neighbor": 0.7
+  }
+}

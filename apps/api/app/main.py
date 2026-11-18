@@ -14,6 +14,7 @@ from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
 from app.db.session import create_engine, create_session_factory
+from app.workers.queue import CeleryQueue
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         openapi_url=f"{settings.API_PREFIX}/openapi.json",
     )
     app.state.settings = settings
+    app.state.task_queue = CeleryQueue()
 
     app.add_middleware(
         CORSMiddleware,

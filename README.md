@@ -4,7 +4,7 @@ Career intelligence and skill gap analysis platform: real job-market data, NLP s
 extraction, curriculum intelligence, resume analysis, semantic job matching, personalised
 roadmaps, demand forecasting and a RAG career assistant.
 
-> Status: **Phase 0 (foundation)**. The v1 Dash/SQLite app is frozen in [`legacy/`](legacy/NOTICE.md).
+> Status: **Phase 1 (v1 functionality on real data) in progress**. The v1 Dash/SQLite app is frozen in [`legacy/`](legacy/NOTICE.md).
 > Progress and phase plan: [`ROADMAP.md`](ROADMAP.md) · Architecture decisions: [`docs/decisions.md`](docs/decisions.md).
 
 ## Repository layout
@@ -39,6 +39,31 @@ pip install -r requirements-dev.lock && pip install --no-deps -e .
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+## Loading real data (Phase 1)
+
+Reference data (skills taxonomy, roles, sources) is loaded automatically by the `migrate`
+service, or by hand with `python -m app.cli seed`. Run commands from `apps/api`
+(`python -m app.cli --help` lists them all):
+
+```bash
+# Job postings from Adzuna: set ADZUNA_APP_ID / ADZUNA_APP_KEY in .env first
+python -m app.cli ingest-adzuna --country in --what "software developer" --pages 5
+#   or through the API: POST /api/v1/ingestion/runs (runs in the worker)
+
+# A licensed dataset (CSV / JSON / JSONL), with a column map if needed
+python -m app.cli import-file --path jobs.csv --source my-dataset --name "My dataset" \
+    --licence "CC BY 4.0, https://..." --map title=job_title posted_at=date
+
+# A real syllabus PDF: create a university and program via the API, then upload
+#   POST /api/v1/programs/{id}/curriculum   (parsed in the worker)
+python -m app.cli parse-curriculum --program-id 1 --path syllabus.pdf   # or synchronously
+```
+
+Analytics (demand, trends, gap, recommendations) only count non-synthetic sources and flag
+results computed from fewer than `ANALYTICS_MIN_POSTINGS` postings. Extraction quality is
+measured on a hand-labelled set: see [`data/eval_sets/README.md`](data/eval_sets/README.md).
+Docs: [`docs/schema.md`](docs/schema.md), [`docs/v1-parity.md`](docs/v1-parity.md).
 
 ## Checks
 
