@@ -24,7 +24,16 @@ Sources used below:
 | Tests at phase close | 23 | change log, 2026-11-18 |
 | CI run that closed the phase | green on `main` @ `12f10ff` (run 44274767002) | GitHub Actions, 2026-11-18 |
 
-## Phase 1: v1 functionality on real data (🟡 in progress; 7 of 8 criteria met)
+## Phase 1: v1 functionality on real data (✅ complete 2026-11-21)
+
+### Phase close
+
+| Metric | Value | Source / date |
+|---|---|---|
+| Closing commit | `7bcfd98` (merge of PR #2) | GitHub, 2026-11-21 |
+| CI on closing commit | green: 3 of 3 jobs on PR run 44910055396 and `main` run 44912030930 | GitHub Actions, 2026-11-21 |
+| Completion criteria | 8 of 8 met | ROADMAP.md |
+| Local F1 gate | `cd apps/api && python -m app.cli eval-extraction --path ../../data/eval_sets/extraction_v1.jsonl --min-f1 0.89` (the labelled set is private, so this is run locally before each phase closes) | data/eval_sets/README.md |
 
 ### Data pipeline (real data, Adzuna India API)
 
@@ -54,7 +63,8 @@ Sources used below:
 | Macro F1 | 0.912 over 65 labelled skills; 0.812 over all 73 labelled or predicted skills | report |
 | Evaluation set | 120 real postings, 210 labels, 65 skills, 0 skipped | report |
 | Pipeline consistency | stored predictions identical to the evaluator's for 120 of 120 postings | report |
-| F1 quality gate | threshold 0.89 (owner-agreed); **passed** with 0.9252 | local `eval-extraction --min-f1 0.89`, 2026-11-21 13:39 UTC |
+| F1 quality gate | threshold 0.89 (owner-agreed); **passed** with 0.9252 | local `eval-extraction --min-f1 0.89`, 2026-11-21 13:39 UTC (PR branch) |
+| F1 quality gate on merged `main` | **passed** with 0.9252 (P 0.9083, R 0.9429), exit code 0 | local run on `7bcfd98`, 2026-11-21 14:06 UTC |
 
 Caveat for the F1: the labels were drafted by Claude and reviewed by the owner (118 of 120
 unchanged). It is not an independent human benchmark. 17 of 32 errors come from labels that
