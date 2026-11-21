@@ -28,6 +28,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.session_factory = create_session_factory(engine)
     app.state.redis = redis
     logger.info("%s %s starting (env=%s)", settings.APP_NAME, settings.APP_VERSION, settings.ENV)
+    if settings.jwt_secret_generated:
+        logger.warning(
+            "JWT_SECRET is not set: using a random per-process secret. Sessions end when the "
+            "API restarts. Set JWT_SECRET (32+ characters) to keep them."
+        )
     try:
         yield
     finally:

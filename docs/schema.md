@@ -7,7 +7,8 @@ upgrade → downgrade → upgrade). ORM models live in `apps/api/app/models/`.
 | Migration | Content |
 |---|---|
 | `0001` | Extensions `vector`, `pg_trgm` |
-| `0002` | Phase 1 core schema (all tables below) and a trigram index on `job_postings.title` |
+| `0002` | Phase 1 core schema and a trigram index on `job_postings.title` |
+| `0003` | Phase 2: users, refresh tokens, student profiles, user skills, faculty assignments, audit log |
 
 Constraint and index names follow the convention in `app/db/base.py`
 (`pk_<table>`, `fk_<table>_<col>_<ref>`, `uq_<table>_<col>`, `ck_<table>_<name>`, `ix_...`).
@@ -166,6 +167,85 @@ Unique (`course_id`, `position`).
 | skill_id | FK skills, PK | indexed |
 | coverage | float | check 0 < x ≤ 1; graded (see `services/curriculum/coverage.py`) |
 | evidence | jsonb | `[{field, start, end, text, rule}]` |
+
+## Accounts (Phase 2)
+
+Deleting a user cascades to their refresh tokens, profile, skills and faculty assignments;
+audit entries they made keep the action with `actor_user_id` set to null. Design and threat
+model: `docs/security.md`.
+
+### `users`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | random (not enumerable) |
+| email | varchar(320) unique | stored lower-case (check constraint), so uniqueness is case-insensitive |
+| password_hash | varchar(255) | argon2id (PHC string) |
+| role | varchar(20) | `student`, `faculty` or `admin` (check) |
+| is_active | bool | inactive users cannot log in or use tokens |
+| failed_login_count | int | consecutive failures; reset on success or lockout |
+| locked_until | timestamptz null | set after `LOGIN_MAX_FAILURES` failures |
+| last_login_at | timestamptz null | |
+| created_at, updated_at | timestamptz | |
+
+### `refresh_tokens`
+One row per issued refresh token; a family is one login.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| user_id | FK users (cascade) | indexed |
+| family_id | uuid | indexed; reuse of a rotated token revokes the whole family |
+| token_hash | varchar(64) unique | SHA-256 of the token; the token itself is never stored |
+| issued_at, expires_at | timestamptz | `REFRESH_TOKEN_DAYS` lifetime |
+| family_started_at | timestamptz | login time; a family cannot be rotated past `REFRESH_FAMILY_MAX_DAYS` |
+| used_at | timestamptz null | set when rotated |
+| revoked_at | timestamptz null | logout, password change, admin action or detected reuse |
+| replaced_by_id | uuid null | the successor issued on rotation |
+
+### `student_profiles`
+| Column | Type | Notes |
+|---|---|---|
+| user_id | uuid PK, FK users (cascade) | one profile per student |
+| display_name | varchar(120) null | |
+| university_id | FK universities null (set null) | filled from the program when omitted |
+| program_id | FK programs null (set null) | must belong to `university_id` |
+| graduation_year | smallint null | 2000–2100 (check) |
+| target_role_id | FK roles null (set null) | |
+| location_preference | varchar(255) null | normalised like posting locations |
+| open_to_remote | bool | |
+| created_at, updated_at | timestamptz | |
+
+### `user_skills`
+| Column | Type | Notes |
+|---|---|---|
+| id | int PK | |
+| user_id | FK users (cascade) | indexed; unique with `skill_id` |
+| skill_id | FK skills (cascade) | |
+| proficiency | smallint | 1 beginner … 5 expert (check) |
+| source | varchar(20) | `self_declared` (check; Phase 3 adds `resume`) |
+| created_at, updated_at | timestamptz | |
+
+### `faculty_program_assignments`
+| Column | Type | Notes |
+|---|---|---|
+| user_id | uuid FK users (cascade) | composite PK with `program_id` |
+| program_id | int FK programs (cascade) | the faculty member may upload this program's curriculum |
+| created_at | timestamptz | |
+
+### `audit_log`
+Append-only record of privileged and security-relevant actions. Never holds passwords,
+tokens or email addresses.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK | |
+| occurred_at | timestamptz | indexed |
+| actor_user_id | FK users null (set null) | indexed; null for system actions and deleted users |
+| actor_role | varchar(20) null | role at the time (`cli` for the CLI) |
+| action | varchar(60) | indexed; e.g. `user.create`, `auth.refresh_reuse`, `curriculum.upload` |
+| target_type, target_id | varchar null | what was acted on |
+| request_id | varchar(64) null | links to the request's log lines |
+| details | jsonb | non-personal details (e.g. role change from/to) |
 
 ## Analytics (derived; rebuilt from the tables above)
 

@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings, get_settings
 from app.models import (
+    AuditLog,
     Course,
     CourseUnit,
     CurriculumDocument,
@@ -83,6 +84,15 @@ async def load(
 async def count(factory: Factory, model: Any) -> int:
     async with factory() as s:
         return int(await s.scalar(select(func.count()).select_from(model)) or 0)
+
+
+@pytest.fixture
+async def api(api: AsyncClient, make_user: Any) -> AsyncClient:
+    """Phase 1 pipeline tests call the API as an admin. Access control itself is tested in
+    test_auth.py and test_access.py."""
+    admin = await make_user("admin")
+    api.headers.update(admin.headers)
+    return api
 
 
 @pytest.fixture
@@ -471,7 +481,7 @@ async def test_ingestion_endpoints(api: AsyncClient, queue: RecordingQueue) -> N
 
 
 async def test_ingestion_trigger_queues_a_run(
-    factory: Factory, test_settings: Settings, queue: RecordingQueue
+    factory: Factory, test_settings: Settings, queue: RecordingQueue, make_user: Any
 ) -> None:
     from httpx import ASGITransport
 
@@ -486,7 +496,10 @@ async def test_ingestion_trigger_queues_a_run(
     app = create_app(settings)
     async with app.router.lifespan_context(app):
         app.state.task_queue = queue
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as c:
+        admin = await make_user("admin")
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="https://t", headers=admin.headers
+        ) as c:
             r = await c.post(
                 "/api/v1/ingestion/runs",
                 json={"source": "adzuna", "params": {"what": "python", "pages": 2}},
@@ -499,6 +512,12 @@ async def test_ingestion_trigger_queues_a_run(
                 "what": "python",
             }
             assert queue.sent == [("ingestion.run", (run["id"],))]
+            async with factory() as s:
+                entry = await s.scalar(
+                    select(AuditLog).where(AuditLog.action == "ingestion.trigger")
+                )
+            assert entry is not None and entry.actor_user_id == admin.id
+            assert entry.target_id == str(run["id"])
             bad = await c.post("/api/v1/ingestion/runs", json={"params": {"country": "zz"}})
             assert bad.status_code == 400
             listed = (await c.get("/api/v1/ingestion/runs")).json()

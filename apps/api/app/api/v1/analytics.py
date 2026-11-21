@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_app_settings, get_db
+from app.api.deps import current_user, expensive_rate_limit, get_app_settings, get_db
 from app.api.v1.schemas import GapReportOut, RecommendationsResponse, RoleGapResponse
 from app.core.config import Settings
 from app.core.errors import NotFoundError
@@ -14,6 +14,8 @@ from app.models import GapReport
 from app.services.analytics.gap import DEFAULT_TOP_N, gap_by_role, gap_report
 from app.services.recommendations import recommend
 
+# Gap endpoints store a report per call, so they need a signed-in user and a rate limit.
+GAP_ACCESS = [Depends(current_user), Depends(expensive_rate_limit)]
 router = APIRouter(tags=["analytics"])
 
 
@@ -28,6 +30,7 @@ def _report_out(report: GapReport) -> dict[str, Any]:
     description="Computes the gap from current data and stores it as a report. "
     "gap = demand_share * (1 - coverage) per skill; see the field descriptions for the "
     "summary metrics.",
+    dependencies=GAP_ACCESS,
 )
 async def get_gap(
     program_id: int = Query(..., description="Program whose curriculum is compared"),
@@ -57,6 +60,7 @@ async def get_gap(
     summary="How well a program covers each role's demand",
     description="Per role: postings in the window and demand-weighted coverage. Replaces v1's "
     "hardcoded home-page radar with computed values.",
+    dependencies=GAP_ACCESS,
 )
 async def get_gap_by_role(
     program_id: int = Query(...),
@@ -76,7 +80,12 @@ async def get_gap_by_role(
     )
 
 
-@router.get("/gap/reports/{report_id}", response_model=GapReportOut, summary="A stored gap report")
+@router.get(
+    "/gap/reports/{report_id}",
+    response_model=GapReportOut,
+    summary="A stored gap report",
+    dependencies=GAP_ACCESS,
+)
 async def get_gap_report(report_id: int, session: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     report = await session.get(GapReport, report_id)
     if report is None:

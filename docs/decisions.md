@@ -147,3 +147,33 @@ Made while building Phase 1 (2026-11-18). Each is documented in code next to whe
   hash includes numeric skill ids, so a seed-built and a database-built extractor with the
   same taxonomy get different version strings. Predictions are unaffected (identical for all
   120 postings). Hashing by slug would fix it, but would also re-extract every posting once.
+
+## Phase 2 design choices
+
+- **Defaults adopted when Phase 2 started (2026-11-21).** The owner said "start phase 2"
+  without changing the proposal, so its recommendations apply. Each can be reversed:
+  - market data stays public, with a per-IP limit;
+  - gap reports and the CSV export need a signed-in user;
+  - curriculum writes need an admin or the program's assigned faculty;
+  - ingestion is admin only;
+  - users and tokens have UUID keys (everything else stays integer);
+  - email verification and password reset by email are deferred until there is an email
+    provider (admins can reset passwords);
+  - frontend pages are left to Phase 6;
+  - account deletion is a hard delete, and the audit log keeps entries with the actor cleared;
+  - open registration creates students only.
+- **Libraries.** `argon2-cffi` (argon2id) and `PyJWT`. Nothing else is new: rate limiting
+  uses the existing Redis, and the email check is a simple pattern, to avoid an extra
+  dependency.
+- **Access token in memory, refresh token in an httpOnly cookie** scoped to `/api/v1/auth`.
+  Every request reloads the user, so revocation is immediate without a token blocklist.
+- **Failures that must survive the request** (failed-login count, lockout, family revocation
+  on reuse) are committed before the error is raised, because the request session rolls back
+  on errors.
+- **Dev secret.** An empty `JWT_SECRET` outside production becomes a random per-process secret
+  with a warning, so a fresh checkout runs without configuration. Production still refuses to
+  start.
+- **Route enumeration in tests uses the OpenAPI schema.** FastAPI 0.163 includes routers
+  lazily, so `app.routes` does not list their routes.
+- **Tests use Redis database 15**, flushed per test, and an https test client, so Secure
+  cookies behave as in a browser.

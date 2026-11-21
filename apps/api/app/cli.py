@@ -12,9 +12,11 @@ regrade-curriculum   recompute unit skill coverage with the current taxonomy
 export-eval-sample   write a random sample of stored postings for hand labelling
 eval-extraction      precision / recall / F1 on a labelled set (optionally calibrate)
 import-esco          link curated skills to ESCO concepts from the ESCO skills CSV
+create-user          create an account (e.g. the first admin); password from a prompt or stdin
 """
 
 import argparse
+import getpass
 import json
 import random
 import sys
@@ -276,6 +278,36 @@ async def cmd_import_esco(factory: Factory, args: argparse.Namespace) -> None:
     _print(result.__dict__)
 
 
+def _read_password(args: argparse.Namespace) -> str:
+    """From stdin (--password-stdin) or an interactive prompt; never a command-line argument,
+    which would end up in shell history and process listings."""
+    if args.password_stdin:
+        return sys.stdin.readline().rstrip("\r\n")
+    first = getpass.getpass("Password: ")
+    if getpass.getpass("Repeat password: ") != first:
+        sys.exit("Passwords do not match")
+    return first
+
+
+async def cmd_create_user(factory: Factory, args: argparse.Namespace) -> None:
+    from app.services import audit
+    from app.services.auth.service import create_user
+
+    password = _read_password(args)
+    async with factory() as session:
+        user = await create_user(session, args.email, password, role=args.role)
+        audit.record(
+            session,
+            "user.create",
+            actor_role="cli",
+            target_type="user",
+            target_id=user.id,
+            details={"role": user.role, "via": "cli"},
+        )
+        await session.commit()
+    _print({"id": str(user.id), "email": user.email, "role": user.role})
+
+
 ASYNC_COMMANDS: dict[str, Callable[[Factory, argparse.Namespace], Awaitable[None]]] = {
     "seed": cmd_seed,
     "ingest-adzuna": cmd_ingest_adzuna,
@@ -288,6 +320,7 @@ ASYNC_COMMANDS: dict[str, Callable[[Factory, argparse.Namespace], Awaitable[None
     "regrade-curriculum": cmd_regrade,
     "export-eval-sample": cmd_export_sample,
     "import-esco": cmd_import_esco,
+    "create-user": cmd_create_user,
 }
 
 
@@ -341,6 +374,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--n", type=int, default=120)
     p.add_argument("--seed", type=int, default=random.randrange(1_000_000))
     p.add_argument("--out", required=True)
+
+    p = sub.add_parser("create-user")
+    p.add_argument("--email", required=True)
+    p.add_argument("--role", choices=["student", "faculty", "admin"], default="admin")
+    p.add_argument("--password-stdin", action="store_true", help="read the password from stdin")
 
     p = sub.add_parser("eval-extraction")
     p.add_argument("--path", required=True)

@@ -22,10 +22,49 @@ class AppError(Exception):
     status_code: int = 400
     code: str = "bad_request"
 
-    def __init__(self, message: str, *, details: Any = None) -> None:
+    def __init__(
+        self, message: str, *, details: Any = None, headers: dict[str, str] | None = None
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.details = details
+        self.headers = headers
+
+
+class InvalidInputError(AppError):
+    status_code = 422
+    code = "invalid_input"
+
+
+class UnauthorizedError(AppError):
+    """Missing, invalid or expired credentials."""
+
+    status_code = 401
+    code = "unauthorized"
+
+    def __init__(self, message: str = "Authentication required", **kwargs: Any) -> None:
+        kwargs.setdefault("headers", {"WWW-Authenticate": "Bearer"})
+        super().__init__(message, **kwargs)
+
+
+class ForbiddenError(AppError):
+    status_code = 403
+    code = "forbidden"
+
+    def __init__(self, message: str = "You do not have permission for this action") -> None:
+        super().__init__(message)
+
+
+class RateLimitedError(AppError):
+    status_code = 429
+    code = "rate_limited"
+
+    def __init__(self, retry_after: int) -> None:
+        super().__init__(
+            "Too many requests; try again later",
+            details={"retry_after_seconds": retry_after},
+            headers={"Retry-After": str(retry_after)},
+        )
 
 
 class NotFoundError(AppError):
@@ -52,7 +91,9 @@ def error_body(code: str, message: str, details: Any = None) -> dict[str, Any]:
 
 async def _app_error_handler(_: Request, exc: Exception) -> JSONResponse:
     err = cast(AppError, exc)
-    return JSONResponse(error_body(err.code, err.message, err.details), err.status_code)
+    return JSONResponse(
+        error_body(err.code, err.message, err.details), err.status_code, headers=err.headers
+    )
 
 
 async def _http_error_handler(_: Request, exc: Exception) -> JSONResponse:

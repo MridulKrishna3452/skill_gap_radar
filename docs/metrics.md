@@ -97,7 +97,25 @@ predate 8 skills added the same day.
 
 ---
 
-## Phases 2–7
+## Phase 2: Authentication and student profiles (🟡 in progress; 6 of 7 criteria met)
+
+| Metric | Value | Source / date |
+|---|---|---|
+| New database tables | 6 (24 in total), migration `0003` with a downgrade | DB, `alembic/versions`, 2026-11-21 |
+| API size | 50 operations on 39 paths (was 29 on 25); 21 new | API `/api/v1/openapi.json`, 2026-11-21 |
+| Operations under access control | 30 protected (8 any user, 7 student, 12 admin, 3 program manager), 18 public, 2 refresh-cookie | `tests/integration/test_access.py` |
+| Access-control test coverage | 50 of 50 operations have a rule; every protected one is checked for 401 / 403 / allowed | `test_access.py`; mutation check confirms it catches a missing guard |
+| Roles | 3 (student, faculty, admin) and faculty→program assignments | `app/models/users.py` |
+| Password hashing | argon2id (t=3, 64 MiB, p=4), 12–128 character policy | `docs/security.md` |
+| Tokens | 15-minute JWT access tokens; 14-day rotating refresh cookies with reuse detection; 30-day maximum per login | `docs/security.md` |
+| Abuse controls | 6 Redis rate limits; lockout after 5 failures for 15 minutes | `docs/security.md`, `test_rate_limits`, `test_failed_logins_lock_the_account` |
+| Audited action types | 12 | `app/services/audit.py` |
+| Automated tests | **256** (215 unit, 41 integration); 52 new auth/access tests (33 unit, 16 auth integration, 3 access) | tests, 2026-11-21 |
+| Application code | 8,123 lines of Python in 69 modules; 3,084 lines of tests | code, 2026-11-21 |
+| CLI commands | 13 (adds `create-user`) | `app/cli.py` |
+| F1 gate re-run (local) | 0.9252 ≥ 0.89, passed (extraction unchanged) | `eval-extraction --min-f1 0.89`, 2026-11-21 15:21 UTC |
+
+## Phases 3–7
 
 Not started. Each phase adds its own section here when it starts, and its metrics are recorded as
 they are verified.
