@@ -166,5 +166,6 @@ reflected back.
 - **No multi-factor authentication** yet.
 - **Fixed-window rate limits** allow up to twice the limit across a window boundary. That is
   acceptable at these sizes.
+- **Rate limit before lockout.** With the defaults, the per-IP-and-email login limit (5 per minute) is reached at the same count as the lockout threshold (5 failures). Within one minute an attacker therefore gets 429 before the account locks, and the lockout only triggers when failures are spread over more than a minute. Both protections hold. Observed in the post-merge check on 2026-11-21.
 - **Proxy-header trust** must be configured (`TRUSTED_PROXIES`) when the API runs behind a
   load balancer (Phase 7).
