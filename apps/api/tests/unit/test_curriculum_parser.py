@@ -55,6 +55,59 @@ def test_body_text_course_codes_are_not_headings() -> None:
     assert "ISO 9001" in result.courses[0].units[0].content
 
 
+# Shapes below were found in a real syllabus (Pondicherry University B.Tech CSE 2023-24).
+
+
+def test_two_digit_course_codes_start_a_course() -> None:
+    pdf = make_pdf(
+        [
+            ("CSPROJ801 CAPSTONE Project II", 14, True),
+            ("Project guidelines without units.", 10, False),
+            ("CSH01 PROGRAMMING WITH C++", 14, True),
+            ("UNIT I", 14, True),
+            ("Classes, objects and inheritance in C++.", 10, False),
+        ]
+    )
+    result = parse_pdf(pdf, "x.pdf", max_pages=50)
+    assert [(c.code, c.title) for c in result.courses] == [("CSH01", "PROGRAMMING WITH C++")]
+
+
+def test_outcome_labels_are_not_course_codes() -> None:
+    pdf = make_pdf(
+        [
+            ("CS 301 Databases", 14, True),
+            ("Unit 1: SQL", 11, False),
+            ("Joins and indexes.", 10, False),
+            ("CO 12 Design normalised schemas", 11, True),
+        ]
+    )
+    result = parse_pdf(pdf, "x.pdf", max_pages=50)
+    assert [c.code for c in result.courses] == ["CS 301"]
+
+
+def test_book_and_reference_lists_are_not_unit_content() -> None:
+    pdf = make_pdf(
+        [
+            ("CSPC601 WEB TECHNOLOGY", 14, True),
+            ("UNIT V", 14, True),
+            ("Servlets and JDBC database connectivity.", 10, False),
+            ("Text", 14, True),
+            ("Books:", 14, True),
+            ("1. Kurose, Computer Networking: A Top-Down Approach.", 10, False),
+            ("References:", 10, False),
+            ("2. JavaScript - The Complete Reference.", 10, False),
+            ("UNIT VI", 14, True),
+            ("Text mining basics.", 10, False),
+            ("Text Mining", 11, True),
+            ("Tokenisation.", 10, False),
+        ]
+    )
+    units = parse_pdf(pdf, "x.pdf", max_pages=50).courses[0].units
+    assert units[0].content == "Servlets and JDBC database connectivity."
+    # "Text mining" / "Text Mining" are topics, not a "Text Books" heading.
+    assert units[1].content == "Text mining basics.\nText Mining\nTokenisation."
+
+
 def test_no_units_fails_instead_of_inventing_topics() -> None:
     pdf = make_pdf([("Some text about the department.", 10, False), ("More text.", 10, False)])
     with pytest.raises(CurriculumParseError, match="Could not find course units"):

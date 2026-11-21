@@ -116,6 +116,14 @@ class JobPosting(Base):
 
     __table_args__ = (
         UniqueConstraint("source_id", "external_id"),
+        # Trigram index for the free-text title filter on /jobs (created in migration 0002).
+        # Declared here too so autogenerate does not try to drop it.
+        Index(
+            "ix_job_postings_title_trgm",
+            "title",
+            postgresql_using="gin",
+            postgresql_ops={"title": "gin_trgm_ops"},
+        ),
         CheckConstraint(
             "extraction_status IN ('pending', 'done', 'failed')", name="extraction_status"
         ),

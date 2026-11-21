@@ -18,7 +18,9 @@ every session before doing any work. Architecture decisions live in
 3. **Run tests before completing each phase**: lint, type checks, unit and integration tests,
    and the Docker stack, as listed in the phase gate checklist.
 4. **Update ROADMAP.md whenever progress changes**: tick criteria as they are met, update the
-   status table, and add a change-log entry.
+   status table, and add a change-log entry. Record every measured number (data volumes,
+   model scores, test counts, API size) in [docs/metrics.md](docs/metrics.md) with its date
+   and source, phase by phase. Only measured values go there, never estimates.
 5. **Ask the project owner for approval before starting each major phase.** Present the phase
    scope from ROADMAP.md and wait for an explicit yes.
 6. **Preserve existing functionality.** Do not remove or break anything that works, including

@@ -6,6 +6,7 @@ import-file          import a licensed CSV/JSON/JSONL dataset of postings
 extract              extract skills from pending postings, then refresh demand
 reextract            re-extract postings processed by an older taxonomy/extractor version
 refresh-demand       rebuild the monthly skill demand series
+reclassify-roles     re-assign posting roles with the current roles.json, then refresh demand
 parse-curriculum     upload and parse a syllabus PDF for a program, synchronously
 regrade-curriculum   recompute unit skill coverage with the current taxonomy
 export-eval-sample   write a random sample of stored postings for hand labelling
@@ -134,6 +135,17 @@ async def cmd_reextract(factory: Factory, _: argparse.Namespace) -> None:
         marked = await mark_stale(session)
         await session.commit()
     _print({"marked": marked, **await _post_ingest(factory)})
+
+
+async def cmd_reclassify_roles(factory: Factory, _: argparse.Namespace) -> None:
+    from app.services.analytics.demand import refresh_monthly_demand
+    from app.services.roles import reclassify_postings
+
+    async with factory() as session:
+        result = await reclassify_postings(session)
+        result["demand_rows"] = await refresh_monthly_demand(session)
+        await session.commit()
+    _print(result)
 
 
 async def cmd_refresh_demand(factory: Factory, _: argparse.Namespace) -> None:
@@ -271,6 +283,7 @@ ASYNC_COMMANDS: dict[str, Callable[[Factory, argparse.Namespace], Awaitable[None
     "extract": cmd_extract,
     "reextract": cmd_reextract,
     "refresh-demand": cmd_refresh_demand,
+    "reclassify-roles": cmd_reclassify_roles,
     "parse-curriculum": cmd_parse_curriculum,
     "regrade-curriculum": cmd_regrade,
     "export-eval-sample": cmd_export_sample,
@@ -285,7 +298,14 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("seed", "extract", "reextract", "refresh-demand", "regrade-curriculum"):
+    for name in (
+        "seed",
+        "extract",
+        "reextract",
+        "refresh-demand",
+        "reclassify-roles",
+        "regrade-curriculum",
+    ):
         sub.add_parser(name)
 
     p = sub.add_parser("ingest-adzuna")

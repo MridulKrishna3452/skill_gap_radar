@@ -82,3 +82,68 @@ Made while building Phase 1 (2026-11-18). Each is documented in code next to whe
 - **Adzuna descriptions are snippets** (a few hundred characters), so extraction on Adzuna
   postings sees part of each ad. Recorded on the source's licence note and here; the eval set
   should be drawn from the same data so the measured F1 reflects it.
+- **Truncated snippets** (added after the first real-data check). A match that runs straight
+  into "…" / "..." is dropped when its alias is the start of another skill's alias
+  ("Java…" might be JavaScript, "C…" might be C++ or CI/CD). Complete words such as "AWS…" are
+  kept.
+- **Extractor version** = `EXTRACTOR_VERSION` (bumped by hand on any change to matching logic)
+  + a hash of the taxonomy and calibration. Any change re-queues stored postings via
+  `python -m app.cli reextract`.
+- **Adzuna timestamps** are stored as received. Some India postings are dated up to ~4.5 h after
+  we fetched them, which suggests IST times labelled as UTC; this is unconfirmed, so no
+  correction is applied. Impact: at most a 5.5 h shift, which only matters at month
+  boundaries.
+- **Labelling process for the F1 set** (owner-approved 2026-11-20). Claude drafts labels blind
+  (from the text only, never from the extractor's output), and the owner reviews every posting.
+  This is faster than labelling from scratch. The risk is that the reviewer anchors on the draft,
+  and that the draft's author also wrote the taxonomy aliases, so agreement with the extractor
+  may be optimistic. The output records both names, and an F1 on the unreviewed draft is
+  reported as provisional only.
+- **Syllabus sections after the last unit** ("Text Books", "References", "Online/NPTEL
+  courses", "Suggested readings") end the unit. Book titles are not taught content, and they
+  inflated coverage on the first real syllabus. These labels end a unit only when followed by
+  a colon or alone on a heading-styled line, so "Text mining" stays content.
+- **Course codes with two digits** (`CSH01`, `CSM03`) start a course. Outcome labels that look
+  like codes (`CO 12`, `PO1`, `PSO2`) are excluded.
+- **Taxonomy: ambiguous aliases found on the first real syllabus.** "ruby" (lasers), "bootstrap"
+  (the loader) and "system design" (electronic / engineering / file system design) now need
+  supporting context, like "go" and "react". This affected 30 stored postings and left the
+  provisional F1 unchanged. Known and left: "File system design" next to "caching" /
+  "architecture" still counts as System Design, because rejecting it needs a "preceding word"
+  rule and a schema change.
+- **Taxonomy and role additions after review (2026-11-21, owner request).** Eight skills added
+  and none removed or renamed by slug:
+  - `unit-testing` (renamed "Unit & Integration Testing") was split. Its automation aliases
+    (test automation, automation testing, Selenium, Cypress, Playwright) moved to a new
+    `test-automation`, with new aliases automated testing/tests, QA automation, Appium and TestNG.
+    `manual-testing`, `exploratory-testing` and `regression-testing` are new, so methodologies
+    are no longer read as automation. Tools stay aliases of `test-automation`; they can be split
+    into their own skills if their demand is worth tracking separately.
+  - `react-native` (parent `react`) and `tailwind-css` (parent `css`) took over the aliases they
+    previously shared with their parents. Analytics still count the parent as implied, but
+    labels and the F1 use the specific skill.
+  - `pega` and `pega-smart-dispute` (parent `pega`) are new, for the Pega roles found in the data.
+
+  One role was added: `software-development-manager`. It covers 36 postings that previously
+  had no role, and no posting changed from another role. The other requested role names
+  already map to existing families: Senior/Software QA Engineer → `qa-engineer`, Senior MongoDB
+  Cloud Engineer → `cloud-engineer`, Software Developer → `software-engineer`. Seniority is not
+  a role: splitting families by seniority would leave most of them below the 30-posting
+  minimum, and 480 postings (22 %) have a senior/lead/staff title. A separate seniority field
+  is the better design. Roles are assigned at ingestion, so `python -m app.cli
+  reclassify-roles` re-applies `roles.json` to stored postings.
+- **Labelling rules revised by the owner (2026-11-21).** Company-description mentions and role
+  names in titles are no longer labelled (data/eval_sets/README.md). The extractor still counts
+  both: under the new rule, 66 of 306 DevOps and 59 of 192 machine-learning mentions come only
+  from role names in titles. Whether the extractor should ignore role names in titles is open;
+  it changes demand shares, so it is the owner's decision.
+- **Extraction evaluation (2026-11-21).** The ground truth is scored as delivered: no record is
+  skipped or edited, and records with no labels stay in, so every prediction on them is a
+  false positive. Micro averages are the headline because they weight every (posting, skill)
+  decision equally. Macro averages are reported over all labelled-or-predicted skills and over
+  labelled skills only; a zero denominator counts as 0. A 95 % bootstrap interval over postings
+  (2,000 resamples, fixed seed) shows how much 120 postings can tell. Reports contain ids,
+  slugs and matched alias text only, never posting text. Known issue: the extractor version
+  hash includes numeric skill ids, so a seed-built and a database-built extractor with the
+  same taxonomy get different version strings. Predictions are unaffected (identical for all
+  120 postings). Hashing by slug would fix it, but would also re-extract every posting once.

@@ -12,6 +12,7 @@ from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from pydantic import SecretStr
 from sqlalchemy import make_url, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -99,7 +100,14 @@ def queue() -> RecordingQueue:
 
 @pytest.fixture
 def test_settings(test_db_url: str) -> Settings:
-    return Settings(ENV="test", DATABASE_URL=test_db_url, ANALYTICS_MIN_POSTINGS=30)
+    # Never inherit real credentials from a developer's .env: tests must not depend on them.
+    return Settings(
+        ENV="test",
+        DATABASE_URL=test_db_url,
+        ANALYTICS_MIN_POSTINGS=30,
+        ADZUNA_APP_ID="",
+        ADZUNA_APP_KEY=SecretStr(""),
+    )
 
 
 @pytest.fixture

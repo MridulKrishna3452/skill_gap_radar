@@ -63,20 +63,23 @@ jobs:
           alembic upgrade head
           alembic downgrade base
           alembic upgrade head
+      - name: Models match migrations
+        run: alembic check
       - name: Seed reference data
         run: python -m app.cli seed
       - name: Tests
         run: pytest -q
       - name: Extraction evaluation gate
-        # Runs once the labelled set exists (see data/eval_sets/README.md). The F1 threshold is
-        # agreed after the baseline is measured and recorded in ROADMAP.md.
+        # The labelled set contains Adzuna text and is kept out of the repository, so this gate
+        # is run locally before each phase closes (owner decision 2026-11-21; threshold 0.89,
+        # see ROADMAP.md and data/eval_sets/README.md). It only runs here if the file is present.
         run: |
           if [ -f ../../data/eval_sets/extraction_v1.jsonl ]; then
             python -m app.cli eval-extraction \
               --path ../../data/eval_sets/extraction_v1.jsonl \
-              --min-f1 "${EXTRACTION_MIN_F1:-0}"
+              --min-f1 "${EXTRACTION_MIN_F1:-0.89}"
           else
-            echo "No labelled extraction set yet; gate skipped."
+            echo "Labelled extraction set is private; the F1 gate (>= 0.89) runs locally."
           fi
 
   api-image:

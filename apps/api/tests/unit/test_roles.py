@@ -19,6 +19,17 @@ SLUG = {i: r["slug"] for i, r in enumerate(ROLES)}
         ("Full Stack Developer (MERN)", "full-stack-developer"),
         ("Java Developer", "software-engineer"),
         ("Sales Executive", None),
+        # Real Adzuna titles (2026-11). Seniority and specialisation stay within the role.
+        ("Software Development Manager", "software-development-manager"),
+        ("Manager, Software Development", "software-development-manager"),
+        ("SOFTWARE DEVELOPMENT MANAGER, Software Development", "software-development-manager"),
+        ("Sr. Engineering Manager", "software-development-manager"),
+        ("Senior Manager Software Engineering", "software-development-manager"),
+        ("Senior QA Engineer (QA Smart Dispute)", "qa-engineer"),
+        ("Software QA Engineer", "qa-engineer"),
+        ("Senior MongoDB Cloud Engineer", "cloud-engineer"),
+        ("Lead Software Developer", "software-engineer"),
+        ("Senior Manager- Data Science", "data-scientist"),
     ],
 )
 def test_classify_title(title: str, expected: str | None) -> None:

@@ -1,0 +1,1338 @@
+{
+  "generated_at": "2026-11-21T13:09:56+00:00",
+  "ground_truth": {
+    "file": "extraction_v1.jsonl",
+    "sha256": "e1da2b1d7f5ab171c311af454be36a3bcf55ae317b2472ff285b060978d5d5a8",
+    "records": 120,
+    "unique_ids": 120,
+    "annotations": 210,
+    "unique_labels": 65,
+    "empty_label_records": 44,
+    "labelled_by": {
+      "claude (draft), reviewed by MK": 120
+    },
+    "agreement_with_draft": {
+      "postings_compared": 120,
+      "identical": 118,
+      "labels_added": 0,
+      "labels_removed": 2
+    },
+    "new_skills_used_in_labels": []
+  },
+  "records_evaluated": 120,
+  "records_skipped": 0,
+  "extractor": "2.1+449ecffeb7",
+  "micro": {
+    "precision": 0.9083,
+    "recall": 0.9429,
+    "f1": 0.9252,
+    "tp": 198,
+    "fp": 20,
+    "fn": 12,
+    "ci95_bootstrap": {
+      "precision": [
+        0.8611,
+        0.9502
+      ],
+      "recall": [
+        0.9113,
+        0.971
+      ],
+      "f1": [
+        0.893,
+        0.9526
+      ]
+    }
+  },
+  "macro_all_skills": {
+    "skills": 73,
+    "precision": 0.8254,
+    "recall": 0.8212,
+    "f1": 0.8119
+  },
+  "macro_labelled_skills": {
+    "skills": 65,
+    "precision": 0.927,
+    "recall": 0.9223,
+    "f1": 0.9119
+  },
+  "per_rule": {
+    "context_term": {
+      "tp": 5
+    },
+    "exact_alias:description": {
+      "tp": 160,
+      "fp": 20
+    },
+    "exact_alias:title": {
+      "tp": 33
+    }
+  },
+  "per_skill": {
+    "agile": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "airflow": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "angular": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4,
+      "predicted": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "ansible": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "aws": {
+      "tp": 5,
+      "fp": 0,
+      "fn": 1,
+      "support": 6,
+      "predicted": 5,
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091
+    },
+    "azure": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "support": 7,
+      "predicted": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "ci-cd": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "support": 7,
+      "predicted": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "computer-vision": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "csharp": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "css": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "support": 6,
+      "predicted": 6,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "cybersecurity": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "data-analysis": {
+      "tp": 2,
+      "fp": 3,
+      "fn": 0,
+      "support": 2,
+      "predicted": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "f1": 0.5714
+    },
+    "data-visualization": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "data-warehousing": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "support": 1,
+      "predicted": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6667
+    },
+    "databricks": {
+      "tp": 6,
+      "fp": 1,
+      "fn": 0,
+      "support": 6,
+      "predicted": 7,
+      "precision": 0.8571,
+      "recall": 1.0,
+      "f1": 0.9231
+    },
+    "deep-learning": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "support": 1,
+      "predicted": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "devops": {
+      "tp": 20,
+      "fp": 0,
+      "fn": 0,
+      "support": 20,
+      "predicted": 20,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "docker": {
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "support": 5,
+      "predicted": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "dotnet": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "etl": {
+      "tp": 15,
+      "fp": 0,
+      "fn": 0,
+      "support": 15,
+      "predicted": 15,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "excel": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "support": 1,
+      "predicted": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "exploratory-testing": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "fastapi": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "flutter": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "gcp": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4,
+      "predicted": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "generative-ai": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "git": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "github-actions": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "go": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "grafana": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "hadoop": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "html": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "support": 6,
+      "predicted": 6,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "infrastructure-as-code": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "ios": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "support": 1,
+      "predicted": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6667
+    },
+    "java": {
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "support": 5,
+      "predicted": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "javascript": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "support": 6,
+      "predicted": 6,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "jenkins": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4,
+      "predicted": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "kafka": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "kubernetes": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4,
+      "predicted": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "linux": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "llms": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "machine-learning": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4,
+      "predicted": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "manual-testing": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "mongodb": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "networking": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 3,
+      "support": 4,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    "nextjs": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "nodejs": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "oop": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "pega-smart-dispute": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "php": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "pyspark": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "python": {
+      "tp": 8,
+      "fp": 0,
+      "fn": 0,
+      "support": 8,
+      "predicted": 8,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "pytorch": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "r": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "support": 1,
+      "predicted": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "react": {
+      "tp": 8,
+      "fp": 0,
+      "fn": 0,
+      "support": 8,
+      "predicted": 8,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "react-native": {
+      "tp": 0,
+      "fp": 2,
+      "fn": 0,
+      "support": 0,
+      "predicted": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "regression-testing": {
+      "tp": 0,
+      "fp": 2,
+      "fn": 0,
+      "support": 0,
+      "predicted": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "rest-api": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "support": 3,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 0.6667,
+      "f1": 0.8
+    },
+    "scala": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "snowflake": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "spark": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "spring-boot": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "sql": {
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "support": 5,
+      "predicted": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "sql-server": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "statistics": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "system-design": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "support": 3,
+      "predicted": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "t-sql": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "tailwind-css": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "tensorflow": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "terraform": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "test-automation": {
+      "tp": 0,
+      "fp": 5,
+      "fn": 0,
+      "support": 0,
+      "predicted": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "typescript": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2,
+      "predicted": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "unit-testing": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 4,
+      "support": 5,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 0.2,
+      "f1": 0.3333
+    }
+  },
+  "weakest_skills": [
+    {
+      "skill": "test-automation",
+      "tp": 0,
+      "fp": 5,
+      "fn": 0,
+      "support": 0,
+      "predicted": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "react-native",
+      "tp": 0,
+      "fp": 2,
+      "fn": 0,
+      "support": 0,
+      "predicted": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "regression-testing",
+      "tp": 0,
+      "fp": 2,
+      "fn": 0,
+      "support": 0,
+      "predicted": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "agile",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "deep-learning",
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "support": 1,
+      "predicted": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "excel",
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "support": 1,
+      "predicted": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "exploratory-testing",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "manual-testing",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "pega-smart-dispute",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "r",
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "support": 1,
+      "predicted": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "tailwind-css",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "support": 0,
+      "predicted": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "skill": "unit-testing",
+      "tp": 1,
+      "fp": 0,
+      "fn": 4,
+      "support": 5,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 0.2,
+      "f1": 0.3333
+    },
+    {
+      "skill": "networking",
+      "tp": 1,
+      "fp": 0,
+      "fn": 3,
+      "support": 4,
+      "predicted": 1,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    {
+      "skill": "data-analysis",
+      "tp": 2,
+      "fp": 3,
+      "fn": 0,
+      "support": 2,
+      "predicted": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "f1": 0.5714
+    },
+    {
+      "skill": "data-warehousing",
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "support": 1,
+      "predicted": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6667
+    }
+  ],
+  "error_categories": {
+    "fn:no_alias_in_text": 6,
+    "fp:other": 7,
+    "fp:new_skill_not_in_labels": 5,
+    "fp:label_uses_older_skill": 8,
+    "fn:label_uses_older_skill": 4,
+    "fn:alias_in_text_but_rejected": 2
+  },
+  "empty_label_records": {
+    "count": 44,
+    "with_predictions": 2,
+    "without_predictions": 42,
+    "fp_from_them": 4,
+    "predicted_skills": {
+      "pega-smart-dispute": 1,
+      "exploratory-testing": 1,
+      "manual-testing": 1,
+      "regression-testing": 1
+    },
+    "ids_with_predictions": [
+      "adzuna:5959429307",
+      "adzuna:5944177246"
+    ]
+  },
+  "pipeline_crosscheck": {
+    "status": "done",
+    "postings_found_in_db": 120,
+    "identical_predictions": 120,
+    "differences": [],
+    "db_extractor_versions": {
+      "2.1+b778332400": 120
+    }
+  },
+  "errors": [
+    {
+      "id": "adzuna:5961418105",
+      "type": "fn",
+      "skill": "networking",
+      "category": "no_alias_in_text"
+    },
+    {
+      "id": "adzuna:5954483928",
+      "type": "fp",
+      "skill": "data-analysis",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "Data Analytics"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5902914061",
+      "type": "fn",
+      "skill": "networking",
+      "category": "no_alias_in_text"
+    },
+    {
+      "id": "adzuna:5959429307",
+      "type": "fp",
+      "skill": "pega-smart-dispute",
+      "category": "new_skill_not_in_labels",
+      "empty_label_record": true,
+      "matched": [
+        "Pega Smart Dispute"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5944177246",
+      "type": "fp",
+      "skill": "exploratory-testing",
+      "category": "new_skill_not_in_labels",
+      "empty_label_record": true,
+      "matched": [
+        "exploratory testing"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5944177246",
+      "type": "fp",
+      "skill": "manual-testing",
+      "category": "new_skill_not_in_labels",
+      "empty_label_record": true,
+      "matched": [
+        "manual testing"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5944177246",
+      "type": "fp",
+      "skill": "regression-testing",
+      "category": "new_skill_not_in_labels",
+      "empty_label_record": true,
+      "matched": [
+        "regression testing"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5946349353",
+      "type": "fp",
+      "skill": "test-automation",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "automation testing"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5946349353",
+      "type": "fn",
+      "skill": "unit-testing",
+      "category": "label_uses_older_skill"
+    },
+    {
+      "id": "adzuna:5879362894",
+      "type": "fn",
+      "skill": "networking",
+      "category": "no_alias_in_text"
+    },
+    {
+      "id": "adzuna:5923201958",
+      "type": "fp",
+      "skill": "react-native",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "React Native"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5923201958",
+      "type": "fp",
+      "skill": "tailwind-css",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "Tailwind CSS"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5961897574",
+      "type": "fn",
+      "skill": "excel",
+      "category": "alias_in_text_but_rejected"
+    },
+    {
+      "id": "adzuna:5949483559",
+      "type": "fp",
+      "skill": "test-automation",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "automated tests"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5949483559",
+      "type": "fn",
+      "skill": "unit-testing",
+      "category": "label_uses_older_skill"
+    },
+    {
+      "id": "adzuna:5926966081",
+      "type": "fp",
+      "skill": "agile",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "agile"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5849302904",
+      "type": "fp",
+      "skill": "test-automation",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "automated tests"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5849302904",
+      "type": "fn",
+      "skill": "unit-testing",
+      "category": "label_uses_older_skill"
+    },
+    {
+      "id": "adzuna:5911414922",
+      "type": "fn",
+      "skill": "rest-api",
+      "category": "no_alias_in_text"
+    },
+    {
+      "id": "adzuna:5905904588",
+      "type": "fp",
+      "skill": "data-warehousing",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "Data Warehouse"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5906871921",
+      "type": "fp",
+      "skill": "test-automation",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "QA Automation",
+        "test automation"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5906871921",
+      "type": "fn",
+      "skill": "unit-testing",
+      "category": "label_uses_older_skill"
+    },
+    {
+      "id": "adzuna:5930115525",
+      "type": "fp",
+      "skill": "ios",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "UIkit"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5967007439",
+      "type": "fp",
+      "skill": "regression-testing",
+      "category": "new_skill_not_in_labels",
+      "empty_label_record": false,
+      "matched": [
+        "Regression Testing"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5967007439",
+      "type": "fp",
+      "skill": "test-automation",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "Selenium"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5905895062",
+      "type": "fp",
+      "skill": "data-analysis",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "Data Analytics"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5908341337",
+      "type": "fp",
+      "skill": "databricks",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "lakehouse"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5887915437",
+      "type": "fn",
+      "skill": "r",
+      "category": "alias_in_text_but_rejected"
+    },
+    {
+      "id": "adzuna:5923259529",
+      "type": "fp",
+      "skill": "react-native",
+      "category": "label_uses_older_skill",
+      "empty_label_record": false,
+      "matched": [
+        "React Native"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5946784801",
+      "type": "fp",
+      "skill": "data-analysis",
+      "category": "other",
+      "empty_label_record": false,
+      "matched": [
+        "data analysis"
+      ],
+      "fields": [
+        "description"
+      ]
+    },
+    {
+      "id": "adzuna:5946784801",
+      "type": "fn",
+      "skill": "deep-learning",
+      "category": "no_alias_in_text"
+    },
+    {
+      "id": "adzuna:5957258378",
+      "type": "fn",
+      "skill": "aws",
+      "category": "no_alias_in_text"
+    }
+  ]
+}

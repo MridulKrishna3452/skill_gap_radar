@@ -58,6 +58,43 @@ class EvalReport:
         p, r = self.precision, self.recall
         return 2 * p * r / (p + r) if p + r else 0.0
 
+    def skill_scores(self) -> dict[str, dict[str, Any]]:
+        """Per skill: counts, support (ground-truth labels) and precision / recall / F1.
+        A ratio with a zero denominator is 0.0 (no predictions, or no labels)."""
+        out: dict[str, dict[str, Any]] = {}
+        for slug, c in self.per_skill.items():
+            tp, fp, fn = c.get("tp", 0), c.get("fp", 0), c.get("fn", 0)
+            p = tp / (tp + fp) if tp + fp else 0.0
+            r = tp / (tp + fn) if tp + fn else 0.0
+            f = 2 * p * r / (p + r) if p + r else 0.0
+            out[slug] = {
+                "tp": tp,
+                "fp": fp,
+                "fn": fn,
+                "support": tp + fn,
+                "predicted": tp + fp,
+                "precision": round(p, 4),
+                "recall": round(r, 4),
+                "f1": round(f, 4),
+            }
+        return out
+
+    def macro(self, *, labelled_only: bool = False) -> dict[str, Any]:
+        """Unweighted mean over skills: every skill that was labelled or predicted, or (with
+        labelled_only) only skills with at least one ground-truth label."""
+        scores = [s for s in self.skill_scores().values() if not labelled_only or s["support"] > 0]
+        n = len(scores)
+
+        def mean(key: str) -> float:
+            return round(sum(s[key] for s in scores) / n, 4) if n else 0.0
+
+        return {
+            "skills": n,
+            "precision": mean("precision"),
+            "recall": mean("recall"),
+            "f1": mean("f1"),
+        }
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "postings": self.postings,
@@ -67,18 +104,24 @@ class EvalReport:
             "precision": round(self.precision, 4),
             "recall": round(self.recall, 4),
             "f1": round(self.f1, 4),
+            "macro": self.macro(),
+            "macro_labelled_skills": self.macro(labelled_only=True),
             "per_rule": self.per_rule,
-            "per_skill": self.per_skill,
+            "per_skill": self.skill_scores(),
         }
 
 
 def load_eval_set(path: Path, known_slugs: set[str]) -> list[LabelledPosting]:
     items: list[LabelledPosting] = []
+    seen: set[str] = set()
     with path.open(encoding="utf-8") as fh:
         for n, line in enumerate(fh, start=1):
             if not line.strip():
                 continue
             raw = json.loads(line)
+            if str(raw["id"]) in seen:
+                raise ValueError(f"{path.name} line {n}: duplicate posting id {raw['id']}")
+            seen.add(str(raw["id"]))
             unknown = set(raw["skills"]) - known_slugs
             if unknown:
                 raise ValueError(f"{path.name} line {n}: unknown skill slugs {sorted(unknown)}")

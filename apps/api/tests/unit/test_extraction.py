@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.services.extraction.extractor import SkillExtractor
+from app.services.extraction.extractor import EXTRACTOR_VERSION, SkillExtractor
 from app.services.extraction.taxonomy import specs_from_seed
 
 
@@ -45,6 +45,14 @@ def test_v1_extraction_case_still_passes(extractor: SkillExtractor) -> None:
         ("Strong R&D background, r is not mentioned as a language.", set(), {"r"}),
         ("Embedded firmware in C and C++ for microcontroller boards.", {"c", "cpp"}, set()),
         ("Grade C students are welcome.", set(), {"c"}),
+        # Seen in a real syllabus (Pondicherry University B.Tech CSE, 2023-24).
+        ("Solid-state lasers (ruby - Neodymium) - dye lasers.", set(), {"ruby"}),
+        ("Backend developer: Ruby, Python and PostgreSQL.", {"ruby"}, set()),
+        ("Design of an Absolute Loader - A Simple Bootstrap Loader.", set(), {"css"}),
+        ("Responsive web pages with HTML5, CSS3 and Bootstrap.", {"css"}, set()),
+        ("Schematic capture and electronic system design flow.", set(), {"system-design"}),
+        ("File system design details - file and directory layout.", set(), {"system-design"}),
+        ("Strong system design skills for scalable backend services.", {"system-design"}, set()),
     ],
 )
 def test_ambiguous_aliases_need_context(
@@ -53,6 +61,27 @@ def test_ambiguous_aliases_need_context(
     found = slugs(extractor, "", text)
     assert present <= found, found
     assert not (absent & found), found
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        # Testing methodologies are not test automation, and vice versa.
+        (
+            "Manual testing and exploratory testing of desktop software.",
+            {"manual-testing", "exploratory-testing"},
+        ),
+        ("Systematic regression testing before each release.", {"regression-testing"}),
+        ("Build test automation frameworks with Selenium and Cypress.", {"test-automation"}),
+        ("Unit tests with pytest and JUnit.", {"unit-testing"}),
+        # The most specific skill wins; the parent is only implied.
+        ("Mobile apps in React Native.", {"react-native"}),
+        ("Styling with Tailwind CSS.", {"tailwind-css"}),
+        ("Testing Pega Smart Dispute for Issuers.", {"pega-smart-dispute"}),
+    ],
+)
+def test_specific_skills(extractor: SkillExtractor, text: str, expected: set[str]) -> None:
+    assert slugs(extractor, "", text) == expected
 
 
 def test_longest_match_wins(extractor: SkillExtractor) -> None:
@@ -111,8 +140,29 @@ def test_direct_mention_beats_implied(extractor: SkillExtractor) -> None:
 def test_confidence_bounds_and_version(extractor: SkillExtractor) -> None:
     for s in extractor.extract([("description", "Python, Go, React, Excel, SQL, AWS Lambda")]):
         assert 0 < s.confidence <= 1
-    assert extractor.version.startswith("2.0+")
+    assert extractor.version.startswith(f"{EXTRACTOR_VERSION}+")
 
 
 def test_empty_text(extractor: SkillExtractor) -> None:
     assert extractor.extract([("title", ""), ("description", "   ")]) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "absent", "present"),
+    [
+        # Found in real Adzuna snippets, which are cut off with an ellipsis.
+        ("expertise in DevOps methodologies and CI/C…", {"c"}, {"devops"}),
+        ("Skill : Javascript, HTML/CSS, Python and R…", {"r"}, {"python"}),
+        ("Strong Java…", {"java"}, set()),
+        ("Strong Java...", {"java"}, set()),
+        # Not the start of another skill's alias: a complete word, kept.
+        ("Cloud on AWS…", set(), {"aws"}),
+        ("Strong Java.", set(), {"java"}),
+    ],
+)
+def test_truncated_words_that_could_be_another_skill_are_dropped(
+    extractor: SkillExtractor, text: str, absent: set[str], present: set[str]
+) -> None:
+    found = slugs(extractor, "", text)
+    assert not (absent & found), found
+    assert present <= found, found
