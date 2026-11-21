@@ -97,7 +97,19 @@ predate 8 skills added the same day.
 
 ---
 
-## Phase 2: Authentication and student profiles (🟡 in progress; 6 of 7 criteria met)
+## Phase 2: Authentication and student profiles (✅ complete 2026-11-21)
+
+### Phase close
+
+| Metric | Value | Source / date |
+|---|---|---|
+| Closing commit | `0039bf7` (merge of PR #4) | GitHub, 2026-11-21 |
+| CI on closing commit | green: 3 of 3 jobs on PR run 44923254876 and `main` run 44923736829 | GitHub Actions, 2026-11-21 |
+| Completion criteria | 7 of 7 met | ROADMAP.md |
+| Live auth checks passed | 15 of 15 (CLI admin creation, registration, login and cookie flags, profile, skill add, 2 role denials, anonymous denial, signed-in gap access, refresh, reuse rejection, account deletion, post-deletion denial, audit entries, no secrets in logs). Lockout was pre-empted by the login rate limit (429), as documented in docs/security.md | stack built from `main`, 2026-11-21 |
+| F1 gate on merged `main` | **passed**, 0.9252 ≥ 0.89 | local run on `0039bf7`, 2026-11-21 16:21 UTC |
+
+### Build measurements
 
 | Metric | Value | Source / date |
 |---|---|---|

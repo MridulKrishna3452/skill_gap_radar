@@ -12,7 +12,7 @@ Architecture decisions (data sources, LLM, auth, infrastructure): [docs/decision
 |---|---|---|---|
 | 0 | Infrastructure and project setup | ✅ Complete (2026-11-18) | — |
 | 1 | Stabilize existing V1 functionality | ✅ Complete (2026-11-21) | 0 |
-| 2 | Authentication and student profiles | 🟡 In progress (started 2026-11-21) — 6 of 7 criteria met; open: phase gate (CI, owner review and merge) | 0, 1 |
+| 2 | Authentication and student profiles | ✅ Complete (2026-11-21) | 0, 1 |
 | 3 | Resume intelligence and semantic job matching | ⚪ Not started | 1, 2 |
 | 4 | Personalized learning roadmaps | ⚪ Not started | 1, 2, 3 |
 | 5 | Demand forecasting and RAG career assistant | ⚪ Not started | 1, 3, 4 |
@@ -335,11 +335,31 @@ audit log migrations, permission dependencies, `docs/security.md` (auth design).
       *`test_account_deletion_removes_personal_data`: no row referencing the user in any of the
       6 account tables, and no email anywhere in the audit log.*
 - [x] `docs/security.md` written.
-- [ ] Phase gate checklist passed.
-      *2026-11-21 local results: ruff, format, mypy (strict) and `alembic check` are clean; 256
-      tests pass with `RUN_INTEGRATION=1` (215 unit, 41 integration); migration 0003 applied;
-      Compose rebuilt and healthy; local F1 gate 0.9252 ≥ 0.89 (exit code 0, extractor
-      unchanged). **Open:** CI on the Phase 2 PR, then owner review and merge.*
+- [x] Phase gate checklist passed.
+      *Passed 2026-11-21 on `main` @ `0039bf7` (merge of PR #4, reviewed and merged by the owner;
+      content identical to the reviewed commit `3c65759`).
+      (1) All six criteria above are checked.
+      (2) ruff, ruff format and mypy (strict) are clean; `alembic check` shows no drift.
+      (3) 256 tests pass with `RUN_INTEGRATION=1` (215 unit, 41 integration).
+      (4) CI is green: PR run 44923254876 and `main` push run 44923736829, with all 3 jobs
+      (lint/types/tests, secret scan, Docker build) successful.
+      (5) Compose rebuilt from `main` and healthy; `/api/v1/health/ready` → 200.
+      (6) This file is updated.
+      **Migrations:** dev database at `0003 (head)`. Round trip on the test database:
+      0003→0002→0003, then base→0003.
+      **Live auth check** against the stack built from `main`:
+      - CLI admin creation, student registration and login (cookie `HttpOnly; Secure;
+        SameSite=Strict; Path=/api/v1/auth`);
+      - profile PUT 200 and skill add 201;
+      - student → admin route 403, student → curriculum upload 403;
+      - anonymous gap 401, student gap 200;
+      - refresh 200, and replaying the rotated cookie 401;
+      - account deletion 204, then `/me` 401;
+      - audit entries for each step, and no token, cookie value or password in the API logs.
+
+      The smoke-test accounts, audit rows and rate-limit keys were deleted afterwards.
+      **F1 gate** (local, threshold 0.89): on `0039bf7` at 16:21 UTC, F1 **0.9252** (P 0.9083,
+      R 0.9429; 120 postings, none skipped), exit code 0.*
 
 ---
 
@@ -551,3 +571,4 @@ update, load-test scripts and results, public demo URL.
 | 2026-11-21 | Owner decisions: F1 gate threshold 0.89, run locally before each phase closes (labelled set stays private); optional changes deferred. Local gate passed (F1 0.9252). Phase 1 PR opened for review; Phase 1 is not complete until it is reviewed, merged and CI is green. |
 | 2026-11-21 | PR #2 merged (`7bcfd98`). Post-merge verification: CI green on PR and `main` (runs 44910055396, 44912030930); local F1 gate passed (0.9252 ≥ 0.89); 204 tests and all static checks pass; stack healthy; no private data or secrets in history. **Phase 1 complete.** Phase 2 needs the owner's approval to start. |
 | 2026-11-21 | **Phase 2 started** on the owner's instruction, with the proposal's recommended defaults (docs/decisions.md). Built: migration `0003` (6 tables); argon2id passwords, JWT access tokens and rotating refresh cookies with reuse detection; lockout and Redis rate limits; roles plus faculty program assignments; access rules on all 50 operations (21 new); profiles, skills inventory, account deletion, audit log, log redaction; a `create-user` CLI and `docs/security.md`. 256 tests pass. 6 of 7 criteria met; the phase gate awaits CI and review. |
+| 2026-11-21 | PR #4 merged (`0039bf7`). Post-merge verification: CI green on the PR and on `main` (runs 44923254876, 44923736829); 256 tests and all static checks pass; migration round trip on the test database; live auth check against the stack built from `main`; local F1 gate passed (0.9252 ≥ 0.89). **Phase 2 complete.** Phase 3 needs the owner's approval to start. |
