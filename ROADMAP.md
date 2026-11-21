@@ -11,7 +11,7 @@ Architecture decisions (data sources, LLM, auth, infrastructure): [docs/decision
 | Phase | Name | Status | Depends on |
 |---|---|---|---|
 | 0 | Infrastructure and project setup | ✅ Complete (2026-11-18) | — |
-| 1 | Stabilize existing V1 functionality | 🟡 In progress — real data and a real syllabus verified, parity signed off; 7 of 8 criteria met (F1 0.925 on 120 reviewed postings); F1 gate ≥ 0.89 passed locally; open: green CI on the Phase 1 PR, then owner review and merge | 0 |
+| 1 | Stabilize existing V1 functionality | ✅ Complete (2026-11-21) | 0 |
 | 2 | Authentication and student profiles | ⚪ Not started | 0, 1 |
 | 3 | Resume intelligence and semantic job matching | ⚪ Not started | 1, 2 |
 | 4 | Personalized learning roadmaps | ⚪ Not started | 1, 2, 3 |
@@ -199,14 +199,21 @@ labelled extraction evaluation set in `data/eval_sets/`.
 - [x] `docs/schema.md` documents all tables; endpoints documented in OpenAPI.
       *All 18 tables in `docs/schema.md`; 25 paths in `/api/v1/openapi.json`, each with a
       summary and typed response model. (2026-11-18)*
-- [ ] Phase gate checklist passed.
-      *2026-11-21: item 1 is met (the seven completion criteria above are checked). Items 2, 3 and 5
-      pass locally: ruff, format, mypy, `alembic check`, 204 tests with `RUN_INTEGRATION=1`, and
-      Compose rebuilt and healthy. F1 gate (owner decision 2026-11-21): threshold **0.89**, run
-      **locally** before each phase closes, because the labelled set stays out of the public
-      repository. Local run 2026-11-21 13:39 UTC: `eval-extraction --min-f1 0.89` gave F1
-      0.9252, exit code 0 (**passed**). **Open: item 4**, a green CI run on the closing commit
-      (the PR for this phase), and the owner's review and merge.*
+- [x] Phase gate checklist passed.
+      *Passed 2026-11-21 on `main` @ `7bcfd98` (merge of PR #2, reviewed and merged by the owner).
+      (1) All seven criteria above are checked. (2) ruff, ruff format and mypy (strict) are clean,
+      and `alembic check` shows no drift. (3) 204 tests pass with `RUN_INTEGRATION=1` (182 unit,
+      22 integration). (4) CI is green on the closing commit: PR run 44910055396 and `main` push
+      run 44912030930, with all 3 jobs (lint/types/tests, secret scan, Docker build) successful.
+      (5) Compose stack healthy, `/api/v1/health/ready` → 200. (6) This file is updated.
+      **F1 gate** (threshold 0.89, run locally; the labelled set is private): on `7bcfd98`, at
+      2026-11-21 14:06 UTC, `python -m app.cli eval-extraction --path
+      ../../data/eval_sets/extraction_v1.jsonl --min-f1 0.89` gave **F1 0.9252** (P 0.9083,
+      R 0.9429; 120 postings, none skipped; extractor `2.1+449ecffeb7`; ground truth sha256
+      `e1da2b1d…78d5d5a8`), exit code 0. **Privacy check:** across the whole history of
+      `origin/main`, no tracked dataset, draft, labelling page, PDF or `.env`; none of the 3
+      credential values in `.env`; and no 60-character fragment of any of the 2,151 stored
+      posting descriptions.*
 
 **Post-merge verification (2026-11-18, `main` @ `12f10ff`).**
 - *Migrations and schema:* dev DB at `0002 (head)`; up/down/up round trip on the test database;
@@ -520,3 +527,4 @@ update, load-test scripts and results, public demo URL.
 | 2026-11-21 | Owner review feedback applied. Taxonomy 110 → 118 skills (test automation split from unit testing; manual, exploratory and regression testing; React Native; Tailwind CSS; Pega; Pega Smart Dispute), no slug removed. Role `software-development-manager` added (36 previously unclassified postings), `reclassify-roles` command. Labelling rules revised (company descriptions and role names in titles not labelled). Labelling page: review flags, explicit review marks, navigation, highlighting, JSONL restore; export keeps the same schema and records unreviewed rows; evaluator rejects duplicate ids. All postings re-extracted. Provisional F1 on the unreviewed draft 0.921 (stale draft labels; flagged for review). |
 | 2026-11-21 | Owner delivered the reviewed ground truth (`extraction_v1.jsonl`, 120 postings, git-ignored). Evaluated with no records skipped: micro P 0.908 / R 0.943 / **F1 0.925** (95 % CI 0.893 to 0.953), macro F1 0.812 (all skills) / 0.912 (labelled skills). Pipeline cross-check: identical predictions for all 120. 17 of 32 errors come from labels that predate the 2026-11-21 skills. Report: `reports/extraction_v1_eval.md`. Evaluator gained per-skill and macro metrics. F1 criterion ticked; 7 of 8 criteria met. The 8th, the phase gate, is open: CI threshold agreement and a green CI run. |
 | 2026-11-21 | Owner decisions: F1 gate threshold 0.89, run locally before each phase closes (labelled set stays private); optional changes deferred. Local gate passed (F1 0.9252). Phase 1 PR opened for review; Phase 1 is not complete until it is reviewed, merged and CI is green. |
+| 2026-11-21 | PR #2 merged (`7bcfd98`). Post-merge verification: CI green on PR and `main` (runs 44910055396, 44912030930); local F1 gate passed (0.9252 ≥ 0.89); 204 tests and all static checks pass; stack healthy; no private data or secrets in history. **Phase 1 complete.** Phase 2 needs the owner's approval to start. |
