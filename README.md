@@ -65,6 +65,20 @@ results computed from fewer than `ANALYTICS_MIN_POSTINGS` postings. Extraction q
 measured on a hand-labelled set: see [`data/eval_sets/README.md`](data/eval_sets/README.md).
 Docs: [`docs/schema.md`](docs/schema.md), [`docs/v1-parity.md`](docs/v1-parity.md).
 
+## Accounts (Phase 2)
+
+Writes and personal data need an account. Create the first admin from `apps/api` (the
+password is read from a prompt, or from stdin with `--password-stdin`):
+
+```bash
+python -m app.cli create-user --email you@example.com --role admin
+```
+
+Then sign in with `POST /api/v1/auth/login` and send the returned `access_token` as
+`Authorization: Bearer <token>`. Students register with `POST /api/v1/auth/register`.
+Faculty accounts are created by an admin (`POST /api/v1/admin/users`) and assigned to programs.
+Roles, tokens, rate limits and the full access table: [`docs/security.md`](docs/security.md).
+
 ## Checks
 
 ```bash

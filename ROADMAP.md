@@ -12,7 +12,7 @@ Architecture decisions (data sources, LLM, auth, infrastructure): [docs/decision
 |---|---|---|---|
 | 0 | Infrastructure and project setup | ✅ Complete (2026-11-18) | — |
 | 1 | Stabilize existing V1 functionality | ✅ Complete (2026-11-21) | 0 |
-| 2 | Authentication and student profiles | ⚪ Not started | 0, 1 |
+| 2 | Authentication and student profiles | 🟡 In progress (started 2026-11-21) — 6 of 7 criteria met; open: phase gate (CI, owner review and merge) | 0, 1 |
 | 3 | Resume intelligence and semantic job matching | ⚪ Not started | 1, 2 |
 | 4 | Personalized learning roadmaps | ⚪ Not started | 1, 2, 3 |
 | 5 | Demand forecasting and RAG career assistant | ⚪ Not started | 1, 3, 4 |
@@ -311,13 +311,35 @@ audit log migrations, permission dependencies, `docs/security.md` (auth design).
   (a parametrised test over the route table); rate limit and lockout triggers.
 
 **Completion criteria**
-- [ ] All auth flows work end to end, including refresh rotation and reuse detection.
-- [ ] Every non-public endpoint is covered by the 401/403 parametrised test.
-- [ ] Profiles and user skills CRUD work with validation.
-- [ ] No password, token or secret appears in logs (test asserts this).
-- [ ] Account deletion removes the user's personal data.
-- [ ] `docs/security.md` written.
+- [x] All auth flows work end to end, including refresh rotation and reuse detection.
+      *`test_full_session_flow`, `test_refresh_token_reuse_revokes_the_family`,
+      `test_expired_and_overage_refresh_tokens_are_rejected`, `test_password_change_ends_every_session`,
+      `test_logout_all`, `test_failed_logins_lock_the_account`, `test_rate_limits`. Also checked
+      against the running Docker stack on 2026-11-21: login, `/me` 200 and anonymous 401, admin
+      route 200, refresh 200, and replaying the rotated cookie gave 401 with an
+      `auth.refresh_reuse` audit entry. The smoke-test accounts were deleted afterwards.*
+- [x] Every non-public endpoint is covered by the 401/403 parametrised test.
+      *`tests/integration/test_access.py`: an access rule for all 50 operations, read from the
+      OpenAPI schema (fails on any unlisted route). The 30 protected operations get no token → 401,
+      wrong role → 403, right role → allowed. Checked by mutation: removing the admin guard from
+      ingestion makes the test fail.*
+- [x] Profiles and user skills CRUD work with validation.
+      *`test_profile_crud_and_validation` (program/university mismatch, unknown role, year
+      range, unknown field, unknown program → 422; non-students 403), `test_skills_inventory`
+      (duplicate 409, unknown slug and proficiency out of range 422, update, delete, 404).*
+- [x] No password, token or secret appears in logs (test asserts this).
+      *`test_no_password_token_or_secret_in_logs` checks raw records and printed output;
+      `test_redaction` covers the redactor. Docker API logs from the smoke test contained no JWT
+      or refresh-cookie value.*
+- [x] Account deletion removes the user's personal data.
+      *`test_account_deletion_removes_personal_data`: no row referencing the user in any of the
+      6 account tables, and no email anywhere in the audit log.*
+- [x] `docs/security.md` written.
 - [ ] Phase gate checklist passed.
+      *2026-11-21 local results: ruff, format, mypy (strict) and `alembic check` are clean; 256
+      tests pass with `RUN_INTEGRATION=1` (215 unit, 41 integration); migration 0003 applied;
+      Compose rebuilt and healthy; local F1 gate 0.9252 ≥ 0.89 (exit code 0, extractor
+      unchanged). **Open:** CI on the Phase 2 PR, then owner review and merge.*
 
 ---
 
@@ -528,3 +550,4 @@ update, load-test scripts and results, public demo URL.
 | 2026-11-21 | Owner delivered the reviewed ground truth (`extraction_v1.jsonl`, 120 postings, git-ignored). Evaluated with no records skipped: micro P 0.908 / R 0.943 / **F1 0.925** (95 % CI 0.893 to 0.953), macro F1 0.812 (all skills) / 0.912 (labelled skills). Pipeline cross-check: identical predictions for all 120. 17 of 32 errors come from labels that predate the 2026-11-21 skills. Report: `reports/extraction_v1_eval.md`. Evaluator gained per-skill and macro metrics. F1 criterion ticked; 7 of 8 criteria met. The 8th, the phase gate, is open: CI threshold agreement and a green CI run. |
 | 2026-11-21 | Owner decisions: F1 gate threshold 0.89, run locally before each phase closes (labelled set stays private); optional changes deferred. Local gate passed (F1 0.9252). Phase 1 PR opened for review; Phase 1 is not complete until it is reviewed, merged and CI is green. |
 | 2026-11-21 | PR #2 merged (`7bcfd98`). Post-merge verification: CI green on PR and `main` (runs 44910055396, 44912030930); local F1 gate passed (0.9252 ≥ 0.89); 204 tests and all static checks pass; stack healthy; no private data or secrets in history. **Phase 1 complete.** Phase 2 needs the owner's approval to start. |
+| 2026-11-21 | **Phase 2 started** on the owner's instruction, with the proposal's recommended defaults (docs/decisions.md). Built: migration `0003` (6 tables); argon2id passwords, JWT access tokens and rotating refresh cookies with reuse detection; lockout and Redis rate limits; roles plus faculty program assignments; access rules on all 50 operations (21 new); profiles, skills inventory, account deletion, audit log, log redaction; a `create-user` CLI and `docs/security.md`. 256 tests pass. 6 of 7 criteria met; the phase gate awaits CI and review. |

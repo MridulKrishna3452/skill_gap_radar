@@ -6,11 +6,39 @@ error can be traced to its log lines.
 
 import json
 import logging
+import re
 import sys
 from contextvars import ContextVar
 from datetime import UTC, datetime
 
 request_id_ctx: ContextVar[str | None] = ContextVar("request_id", default=None)
+
+
+# Credentials that must never reach a log line, whatever logs them (our code, a library, an
+# exception message). Applied to the fully formatted line, including tracebacks.
+_REDACTIONS = [
+    (re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]+"), "Bearer [REDACTED]"),
+    (re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]+"), "[REDACTED_JWT]"),
+    (re.compile(r"(?i)(sr_refresh=)[^;\s,]+"), r"\1[REDACTED]"),
+    (
+        re.compile(
+            r"(?i)([\"']?\b(?:\w*password|app_key|api_key|\w*secret|\w*token)[\"']?\s*[:=]\s*)"
+            r"([\"']?)[^\s\"',;&}]+"
+        ),
+        r"\1\2[REDACTED]",
+    ),
+]
+
+
+def redact(text: str) -> str:
+    for pattern, replacement in _REDACTIONS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+class RedactingFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        return redact(super().format(record))
 
 
 class RequestIDFilter(logging.Filter):
@@ -30,7 +58,7 @@ class JSONFormatter(logging.Formatter):
         }
         if record.exc_info:
             payload["exc"] = self.formatException(record.exc_info)
-        return json.dumps(payload, ensure_ascii=False)
+        return redact(json.dumps(payload, ensure_ascii=False))
 
 
 def configure_logging(level: str, *, json_output: bool) -> None:
@@ -40,7 +68,7 @@ def configure_logging(level: str, *, json_output: bool) -> None:
         handler.setFormatter(JSONFormatter())
     else:
         handler.setFormatter(
-            logging.Formatter("%(asctime)s %(levelname)-7s [%(request_id)s] %(name)s: %(message)s")
+            RedactingFormatter("%(asctime)s %(levelname)-7s [%(request_id)s] %(name)s: %(message)s")
         )
 
     root = logging.getLogger()

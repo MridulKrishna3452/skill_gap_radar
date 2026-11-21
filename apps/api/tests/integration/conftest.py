@@ -6,7 +6,9 @@ import asyncio
 import os
 import subprocess
 import sys
-from collections.abc import AsyncIterator, Iterator
+import uuid
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +67,7 @@ def test_db_url() -> Iterator[str]:
 
 
 TABLES = (
+    "audit_log, refresh_tokens, user_skills, student_profiles, faculty_program_assignments, users, "
     "gap_reports, skill_demand_monthly, unit_skills, course_units, courses, "
     "curriculum_documents, programs, universities, posting_skills, job_postings, companies, "
     "ingestion_runs, job_sources, learning_content, role_skills, roles, skill_aliases, skills"
@@ -98,15 +101,33 @@ def queue() -> RecordingQueue:
     return RecordingQueue()
 
 
+def _test_redis_url() -> str:
+    """Database 15 of the configured Redis, flushed per test (dev data lives in db 0)."""
+    base = Settings().REDIS_URL.rsplit("/", 1)[0]
+    return os.getenv("TEST_REDIS_URL", f"{base}/15")
+
+
+GENEROUS = "10000/60"
+
+
 @pytest.fixture
 def test_settings(test_db_url: str) -> Settings:
     # Never inherit real credentials from a developer's .env: tests must not depend on them.
+    # Rate limits are generous here; tests of the limits themselves lower them.
     return Settings(
         ENV="test",
         DATABASE_URL=test_db_url,
+        REDIS_URL=_test_redis_url(),
         ANALYTICS_MIN_POSTINGS=30,
         ADZUNA_APP_ID="",
         ADZUNA_APP_KEY=SecretStr(""),
+        JWT_SECRET=SecretStr("test-secret-" + "x" * 40),
+        RATE_LIMIT_LOGIN=GENEROUS,
+        RATE_LIMIT_LOGIN_IP=GENEROUS,
+        RATE_LIMIT_REGISTER=GENEROUS,
+        RATE_LIMIT_REFRESH=GENEROUS,
+        RATE_LIMIT_EXPENSIVE=GENEROUS,
+        RATE_LIMIT_PUBLIC=GENEROUS,
     )
 
 
@@ -119,6 +140,41 @@ async def api(
     app = create_app(test_settings)
     async with app.router.lifespan_context(app):
         app.state.task_queue = queue
+        await app.state.redis.flushdb()
         transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # https, so Secure cookies are stored and sent as a browser would.
+        async with AsyncClient(transport=transport, base_url="https://test") as client:
             yield client
+
+
+@dataclass
+class Account:
+    id: uuid.UUID
+    email: str
+    password: str
+    role: str
+    headers: dict[str, str]
+
+
+PASSWORD = "correct horse battery staple"
+
+
+@pytest.fixture
+def make_user(
+    factory: async_sessionmaker[AsyncSession], test_settings: Settings
+) -> Callable[..., Awaitable[Account]]:
+    """Create an account directly (test fixture data) and return it with a Bearer header."""
+    from app.services.auth.service import create_user
+    from app.services.auth.tokens import create_access_token
+
+    counter = iter(range(1, 10_000))
+
+    async def make(role: str = "student", email: str | None = None) -> Account:
+        address = email or f"{role}{next(counter)}@example.test"
+        async with factory() as session:
+            user = await create_user(session, address, PASSWORD, role=role)
+            await session.commit()
+        token = create_access_token(user.id, user.role, test_settings).token
+        return Account(user.id, address, PASSWORD, role, {"Authorization": f"Bearer {token}"})
+
+    return make

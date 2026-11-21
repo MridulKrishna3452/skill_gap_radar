@@ -10,7 +10,7 @@ from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import Pagination, get_db, pagination
+from app.api.deps import Pagination, current_user, expensive_rate_limit, get_db, pagination
 from app.api.v1.schemas import JobDetail, JobFacets, JobSummary, Page
 from app.core.errors import NotFoundError
 from app.models import Company, JobPosting, JobSource, PostingSkill, Role, Skill
@@ -204,6 +204,8 @@ EXPORT_COLUMNS = [
     "Skill columns list directly mentioned skills (not implied ones), separated by ';'.",
     response_class=Response,
     responses={200: {"content": {"text/csv": {}}}},
+    # Signed-in users only, and rate-limited: a full export is the most expensive read.
+    dependencies=[Depends(current_user), Depends(expensive_rate_limit)],
 )
 async def export_jobs(
     limit: int = Query(EXPORT_MAX_ROWS, ge=1, le=EXPORT_MAX_ROWS),

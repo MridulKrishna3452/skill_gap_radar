@@ -10,17 +10,26 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import Pagination, get_app_settings, get_db, get_task_queue, pagination
+from app.api.deps import (
+    Pagination,
+    get_app_settings,
+    get_db,
+    get_task_queue,
+    pagination,
+    require_admin,
+)
 from app.api.v1.schemas import IngestionRunIn, IngestionRunOut, Page, SourceOut
 from app.core.config import Settings
 from app.core.errors import AppError, NotFoundError, ServiceUnavailableError
-from app.models import IngestionRun, JobSource
+from app.models import IngestionRun, JobSource, User
+from app.services import audit
 from app.services.ingestion.adzuna import AdzunaConnector
 from app.services.ingestion.base import IngestionConfigError
 from app.services.ingestion.runner import create_run
 from app.workers.queue import TaskQueue
 
-router = APIRouter(tags=["ingestion"])
+# Admin only: sources, run history and triggering fetches (docs/security.md).
+router = APIRouter(tags=["ingestion"], dependencies=[Depends(require_admin)])
 
 
 @router.get("/sources", response_model=list[SourceOut], summary="Registered job sources")
@@ -42,6 +51,7 @@ async def start_run(
     session: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_app_settings),
     queue: TaskQueue = Depends(get_task_queue),
+    admin: User = Depends(require_admin),
 ) -> IngestionRun:
     if not settings.adzuna_enabled:
         raise ServiceUnavailableError(
@@ -57,6 +67,14 @@ async def start_run(
     if source is None:
         raise NotFoundError(f"Source '{body.source}' is not registered (run the seed command)")
     run = await create_run(session, source, params)
+    audit.record(
+        session,
+        "ingestion.trigger",
+        actor=admin,
+        target_type="ingestion_run",
+        target_id=run.id,
+        details={"source": body.source, "params": params},
+    )
     await session.commit()
     await queue.send("ingestion.run", run.id)
     await session.refresh(run, ["source"])

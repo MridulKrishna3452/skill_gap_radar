@@ -8,7 +8,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import Pagination, get_app_settings, get_db, get_task_queue, pagination
+from app.api.deps import (
+    Pagination,
+    get_app_settings,
+    get_db,
+    get_task_queue,
+    pagination,
+    require_admin,
+    require_document_manager,
+    require_program_manager,
+)
 from app.api.v1.schemas import (
     CurriculumOut,
     DocumentOut,
@@ -29,7 +38,9 @@ from app.models import (
     Skill,
     UnitSkill,
     University,
+    User,
 )
+from app.services import audit
 from app.services.curriculum.service import UploadTooLargeError, create_document
 from app.workers.queue import TaskQueue
 
@@ -43,7 +54,9 @@ router = APIRouter(tags=["curriculum"])
     summary="Create a university",
 )
 async def create_university(
-    body: UniversityIn, session: AsyncSession = Depends(get_db)
+    body: UniversityIn,
+    session: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
 ) -> University:
     uni = University(name=body.name.strip(), country=body.country.lower() if body.country else None)
     session.add(uni)
@@ -51,6 +64,9 @@ async def create_university(
         await session.flush()
     except IntegrityError as exc:
         raise ConflictError(f"University '{body.name}' already exists") from exc
+    audit.record(
+        session, "university.create", actor=admin, target_type="university", target_id=uni.id
+    )
     return uni
 
 
@@ -73,7 +89,11 @@ async def list_universities(
     status_code=status.HTTP_201_CREATED,
     summary="Create a degree program",
 )
-async def create_program(body: ProgramIn, session: AsyncSession = Depends(get_db)) -> Program:
+async def create_program(
+    body: ProgramIn,
+    session: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> Program:
     if await session.get(University, body.university_id) is None:
         raise NotFoundError(f"University {body.university_id} not found")
     program = Program(university_id=body.university_id, name=body.name.strip(), degree=body.degree)
@@ -82,6 +102,9 @@ async def create_program(body: ProgramIn, session: AsyncSession = Depends(get_db
         await session.flush()
     except IntegrityError as exc:
         raise ConflictError(f"Program '{body.name}' already exists at this university") from exc
+    audit.record(
+        session, "program.create", actor=admin, target_type="program", target_id=program.id
+    )
     return program
 
 
@@ -134,6 +157,7 @@ async def upload_curriculum(
     session: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_app_settings),
     queue: TaskQueue = Depends(get_task_queue),
+    manager: User = Depends(require_program_manager),
 ) -> dict[str, Any]:
     data = await file.read(settings.CURRICULUM_MAX_BYTES + 1)
     if len(data) > settings.CURRICULUM_MAX_BYTES:
@@ -141,6 +165,15 @@ async def upload_curriculum(
             f"File exceeds the {settings.CURRICULUM_MAX_BYTES // (1024 * 1024)} MB limit"
         )
     doc, created = await create_document(session, program_id, file.filename or "", data, settings)
+    if created:
+        audit.record(
+            session,
+            "curriculum.upload",
+            actor=manager,
+            target_type="curriculum_document",
+            target_id=doc.id,
+            details={"program_id": program_id, "sha256": doc.sha256, "bytes": doc.size_bytes},
+        )
     queued = created or doc.status == "superseded"
     if not created:
         response.status_code = status.HTTP_200_OK
@@ -158,7 +191,9 @@ async def upload_curriculum(
     summary="Uploaded syllabus documents for a program",
 )
 async def list_documents(
-    program_id: int, session: AsyncSession = Depends(get_db)
+    program_id: int,
+    session: AsyncSession = Depends(get_db),
+    _: User = Depends(require_program_manager),
 ) -> list[CurriculumDocument]:
     if await session.get(Program, program_id) is None:
         raise NotFoundError(f"Program {program_id} not found")
@@ -179,7 +214,9 @@ async def list_documents(
     summary="Parse status of an uploaded syllabus",
 )
 async def get_document(
-    document_id: int, session: AsyncSession = Depends(get_db)
+    document_id: int,
+    session: AsyncSession = Depends(get_db),
+    _: User = Depends(require_document_manager),
 ) -> CurriculumDocument:
     doc = await session.get(CurriculumDocument, document_id)
     if doc is None:

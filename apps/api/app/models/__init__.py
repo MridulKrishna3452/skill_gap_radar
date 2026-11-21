@@ -11,12 +11,22 @@ from app.models.curriculum import (
 )
 from app.models.jobs import Company, IngestionRun, JobPosting, JobSource, PostingSkill
 from app.models.taxonomy import LearningContent, Role, RoleSkill, Skill, SkillAlias
+from app.models.users import (
+    AuditLog,
+    FacultyProgramAssignment,
+    RefreshToken,
+    StudentProfile,
+    User,
+    UserSkill,
+)
 
 __all__ = [
+    "AuditLog",
     "Company",
     "Course",
     "CourseUnit",
     "CurriculumDocument",
+    "FacultyProgramAssignment",
     "GapReport",
     "IngestionRun",
     "JobPosting",
@@ -24,11 +34,15 @@ __all__ = [
     "LearningContent",
     "PostingSkill",
     "Program",
+    "RefreshToken",
     "Role",
     "RoleSkill",
     "Skill",
     "SkillAlias",
     "SkillDemandMonthly",
+    "StudentProfile",
     "UnitSkill",
     "University",
+    "User",
+    "UserSkill",
 ]
