@@ -10,8 +10,8 @@ Architecture decisions (data sources, LLM, auth, infrastructure): [docs/decision
 
 | Phase | Name | Status | Depends on |
 |---|---|---|---|
-| 0 | Infrastructure and project setup | 🟡 In progress — local checks pass; CI run pending (needs GitHub remote) | — |
-| 1 | Stabilize existing V1 functionality | 🟡 In progress — built, tested, real Adzuna data loaded; needs syllabus PDF, labelled set, CI run | 0 |
+| 0 | Infrastructure and project setup | ✅ Complete (2026-11-18) | — |
+| 1 | Stabilize existing V1 functionality | 🟡 In progress — real data and a real syllabus verified, parity signed off; 7 of 8 criteria met (F1 0.925 on 120 reviewed postings); F1 gate ≥ 0.89 passed locally; open: green CI on the Phase 1 PR, then owner review and merge | 0 |
 | 2 | Authentication and student profiles | ⚪ Not started | 0, 1 |
 | 3 | Resume intelligence and semantic job matching | ⚪ Not started | 1, 2 |
 | 4 | Personalized learning roadmaps | ⚪ Not started | 1, 2, 3 |
@@ -95,7 +95,8 @@ local stack, database migrations, background workers and CI.
       `0001 (head)`; Postgres 17.12 with `vector` 0.8.7 and `pg_trgm` 1.6. *(2026-11-16)*
 - [x] Worker processes `system.ping` from the running stack (task received and succeeded
       in worker logs). *(2026-11-18)*
-- [ ] CI run green on GitHub (requires a remote).
+- [x] CI run green on GitHub: workflow run 44274767002 on `main` @ `12f10ff` (merge of PR #1),
+      all three jobs passed: lint/types/tests, Docker build, secret scan. *(2026-11-18)*
 
 **Notes.**
 - Initial commit `df10e63`. Local verification completed 2026-11-18; container logs show no
@@ -106,7 +107,10 @@ local stack, database migrations, background workers and CI.
   default to 5433 / 6380. Host URLs use `127.0.0.1` because on Windows `localhost` resolves to
   IPv6 `::1` first, adding ~2 s per connection and tripping the readiness timeout. Settings
   also read the repo-root `.env` when run from `apps/api`.
-- Remaining: a green CI run, which needs the repository pushed to GitHub.
+- The first push of `main` (run 44245923876, `c7b2f3b`) failed the gitleaks secret scan; the
+  run logs need a GitHub login, so the cause was not inspected. The PR run and the `main` run
+  after the merge both passed the scan.
+- Phase gate: criteria all checked; local checks re-run 2026-11-18; CI green. Phase 0 complete.
 
 ---
 
@@ -152,14 +156,15 @@ labelled extraction evaluation set in `data/eval_sets/`.
   curriculum upload → parsed units → coverage; endpoints with pagination and filters.
 - ML evaluation: extraction precision / recall / F1 on the labelled set, reported and gated in CI
   at a threshold agreed when the baseline is measured.
+  *Agreed 2026-11-21: F1 ≥ 0.89, gated locally (the set is private); measured 0.925.*
 - Regression tests for each v1 bug listed in `legacy/NOTICE.md`.
 
 **Completion criteria**
-- [ ] Every v1 feature in `docs/v1-parity.md` has a working, tested 2.0 equivalent.
+- [x] Every v1 feature in `docs/v1-parity.md` has a working, tested 2.0 equivalent.
       *Met for the Phase 1 scope: every data, analytics and API feature is done and tested
       (test names in the parity doc). Two v1 features are scheduled later by this roadmap: the
       resume analyser (Phase 3) and the Dash pages (Phase 6; their data is served by Phase 1
-      endpoints). Owner to confirm this reading before ticking.*
+      endpoints). Owner confirmed this reading on 2026-11-20.*
 - [x] At least one real data source ingests successfully; no synthetic records in analytics.
       *Adzuna (India), 2026-11-18: 10 runs via `POST /ingestion/runs` (9 role searches, last 90
       days, 5 pages each, plus one 2-page test) stored 2,151 real postings, 99 duplicates
@@ -170,9 +175,21 @@ labelled extraction evaluation set in `data/eval_sets/`.
       *`test_adzuna_ingestion_end_to_end_and_idempotent` (re-run: 0 inserted, 60 duplicates),
       `test_cross_source_duplicate_content_is_skipped`,
       `test_curriculum_upload_parse_and_no_duplicates`. (2026-11-18)*
-- [ ] Extraction F1 measured on a labelled set of at least 100 postings and recorded here.
-      *Tooling done (`export-eval-sample`, `eval-extraction`, calibration; guide in
-      `data/eval_sets/README.md`). **Not met:** needs real postings, then labelling by hand.*
+- [x] Extraction F1 measured on a labelled set of at least 100 postings and recorded here.
+      *Measured 2026-11-21 on `extraction_v1.jsonl`: 120 real Adzuna postings, 210 labels over 65
+      skills, 44 records with no labels, sha256 `e1da2b1d…78d5d5a8`, reviewed by the owner (MK).
+      The file is git-ignored because it contains Adzuna text. All 120 records were evaluated
+      and none skipped; records with no labels count every prediction as a false positive.
+      Extractor `2.1+449ecffeb7`. **Micro precision 0.908, recall 0.943, F1 0.925** (TP 198,
+      FP 20, FN 12; 95 % bootstrap interval for F1 0.893 to 0.953). Macro F1 0.812 over the 73
+      skills labelled or predicted, and 0.912 over the 65 labelled skills. The production
+      pipeline's stored predictions for the same 120 postings are identical. Full report:
+      `reports/extraction_v1_eval.md`. **Caveats:** (1) 118 of 120 records are unchanged from
+      the Claude draft, so this mostly measures the extractor against Claude-drafted, owner-
+      checked labels, not independent human labels. (2) The labels use none of the 8 skills
+      added on 2026-11-21, and 17 of the 32 errors come from that mismatch (e.g. the extractor
+      says `test-automation` where the label says `unit-testing`). This is the score as
+      labelled, and the labels were not changed.*
 - [x] Gap and coverage numbers verified against hand-computed fixtures.
       *`test_gap_math.py`, `test_coverage.py`, `test_trends.py`; end to end through the API in
       `test_gap_matches_hand_computed_values` and `test_gap_by_role`. (2026-11-18)*
@@ -183,9 +200,58 @@ labelled extraction evaluation set in `data/eval_sets/`.
       *All 18 tables in `docs/schema.md`; 25 paths in `/api/v1/openapi.json`, each with a
       summary and typed response model. (2026-11-18)*
 - [ ] Phase gate checklist passed.
-      *Local gate items pass (ruff, format, mypy, 169 tests with `RUN_INTEGRATION=1`,
-      migrations up/down/up, `docker compose up --build` healthy with the worker running the
-      new tasks). Open: CI run on GitHub, and the two real-data criteria above.*
+      *2026-11-21: item 1 is met (the seven completion criteria above are checked). Items 2, 3 and 5
+      pass locally: ruff, format, mypy, `alembic check`, 204 tests with `RUN_INTEGRATION=1`, and
+      Compose rebuilt and healthy. F1 gate (owner decision 2026-11-21): threshold **0.89**, run
+      **locally** before each phase closes, because the labelled set stays out of the public
+      repository. Local run 2026-11-21 13:39 UTC: `eval-extraction --min-f1 0.89` gave F1
+      0.9252, exit code 0 (**passed**). **Open: item 4**, a green CI run on the closing commit
+      (the PR for this phase), and the owner's review and merge.*
+
+**Post-merge verification (2026-11-18, `main` @ `12f10ff`).**
+- *Migrations and schema:* dev DB at `0002 (head)`; up/down/up round trip on the test database;
+  offline SQL creates 18 tables + `alembic_version`; every DB column appears in
+  `docs/schema.md`. **Issue found and fixed:** `alembic check` reported drift (the trigram
+  index existed only in the migration, so the next autogenerate would have dropped it). It is
+  now declared on the model; `alembic check` passes and runs in CI.
+- *Adzuna on real data:* 2,151 postings; run counts reconcile (fetched = inserted +
+  duplicates for every run; sum of inserted = rows); no synthetic sources; no HTML left;
+  stored monthly demand equals a direct recount (424 rows, 0 mismatches); live re-fetch of a
+  real page gave 50 duplicates, 0 inserts. **Data issue (not fixed, documented):** 9 postings
+  have `posted_at` up to 4 h 32 min after we ingested them; consistent with Adzuna India
+  sending IST times marked as UTC (≤ 5 h 30 min shift). Unconfirmed, so timestamps are stored
+  as received.
+- *Extraction on real data:* **Issue found and fixed:** Adzuna snippets end in "…", so cut-off
+  words were matched as other skills ("CI/C…" → C, "R…" → R, "Java…" could be JavaScript).
+  Matches cut off by an ellipsis are now dropped when the alias is the start of another
+  skill's alias. Extractor bumped to 2.1 (code version now part of the version string) and all
+  2,151 postings re-extracted. Other doubtful matches seen in a spot check (Oracle the company
+  read as Oracle Database; "Transformers" as a model architecture) are left for the labelled
+  set to quantify.
+- *Test isolation fixed:* integration test settings read a developer's `.env`, so a configured
+  Adzuna key changed a test's outcome. Test settings now blank Adzuna credentials.
+- *F1:* draft labels and provisional F1 done 2026-11-20 (see the criterion above); owner review
+  outstanding.
+- *Real syllabus (2026-11-20):* Pondicherry University, B.Tech Computer Science and Engineering
+  (affiliated colleges), curriculum 2023-24 revised 01-10-2024, a public PDF from
+  `pondiuni.edu.in` (212 pages, 1,040,114 bytes, SHA-256 `e0337788…d2bb83`; not committed,
+  it is the university's document). Uploaded through `POST /programs/{id}/curriculum`, parsed
+  by the worker. **Two parser bugs found and fixed:** (1) two-digit course codes (`CSH01`,
+  `CSM03`) were not recognised, so 10 honours/minor courses were merged into the preceding
+  capstone project; (2) "Text Books" / "References" / "Online/NPTEL" lists were read as the
+  last unit's content, so book titles counted as coverage ("Computer Networking: A Top-Down
+  Approach" under Web Technology). After the fixes, all 79 courses with units are parsed, 5
+  units each (395 units); the other 20 headings are 18 labs and 2 capstone projects, which
+  have no units in the PDF. Re-uploading the same file returns HTTP 200 and creates nothing.
+  **Coverage audit:** all 200 unit–skill matches were read against their evidence. Clear false
+  positives fixed in the taxonomy: "ruby" lasers, "Bootstrap Loader", "electronic/engineering
+  system design" (ruby, bootstrap and "system design" now need context; 30 postings were
+  affected, provisional F1 unchanged). Left and documented: "File system design" (OS course)
+  still read as System Design; "Web Services" in "Google Web Services" read as REST; "Red Hat"
+  the company read as Linux. 196 matches remain. **Results** (window Jun–Nov 2026, 2,109
+  postings): weighted coverage 0.344, top-20 coverage 0.395 (12 of 20 covered), gap index
+  0.656. Largest gaps: DevOps, React, ETL, CI/CD, Angular, Generative AI. By role, gap index
+  ranges 0.42 (ML engineer) to 0.77 (DevOps engineer); 5 roles flagged `low_sample`.
 
 **Notes.**
 - Started 2026-11-18 on the owner's instruction while Phase 0's last item (a green CI run on
@@ -197,9 +263,10 @@ labelled extraction evaluation set in `data/eval_sets/`.
   terms, so they describe this sample, not the whole Indian job market. Adzuna gives description
   snippets: 788 of 2,151 postings (37 %) mention no taxonomy skill. November 2026 is a partial
   month. 179 postings match no role.
-- Owner inputs needed to finish: (1) ~~Adzuna key~~ done 2026-11-18; (2) at least one
-  real syllabus PDF; (3) labelling ≥ 100 exported postings (or approval for a labelling
-  process), after which the F1 is recorded here and the CI gate threshold agreed.
+- Owner inputs needed to finish: (1) ~~Adzuna key~~ done 2026-11-18; (2) ~~a real
+  syllabus PDF~~ done 2026-11-20 (public Pondicherry University syllabus, owner-approved);
+  (3) ~~labelling process~~ approved 2026-11-20; remaining: **review the drafted labels**,
+  after which the F1 is recorded here and the CI gate threshold agreed.
 - Confidence values are uncalibrated priors until step (3) (`calibration.json` says
   `status: prior`).
 
@@ -448,3 +515,8 @@ update, load-test scripts and results, public demo URL.
 | 2026-11-18 | Phase 0 verified locally: Compose stack healthy, migrations round trip, 23 tests pass, worker ping. Fixed host-port clash and Windows `localhost` delay. Only the CI run remains. |
 | 2026-11-18 | Phase 1 started on owner instruction. Built: migration `0002` (18 tables), taxonomy seed (110 skills / 467 aliases / 14 roles), Adzuna + file ingestion with run tracking and dedup, extraction v2, curriculum parser + graded coverage, demand series, gap (+ by role), trends, recommendations, 25 API paths, Celery tasks, CLI, `docs/schema.md`, `docs/v1-parity.md`. 169 tests pass (148 unit, 21 integration). 4 of 8 criteria met; remaining ones need the Adzuna key, a real syllabus, labelled postings and a CI run. |
 | 2026-11-18 | First real data: Adzuna key configured (in `.env` only), 2,151 real postings ingested and extracted. 5 of 8 Phase 1 criteria met. |
+| 2026-11-18 | PR #1 merged; CI green on `main` → **Phase 0 complete**. Post-merge verification of Phase 1: fixed model/migration index drift, truncated-word false matches (extractor 2.1, all postings re-extracted) and test isolation; documented Adzuna timestamp offset. 175 tests pass. F1 and real-syllabus checks still open. |
+| 2026-11-20 | Owner approved: parity reading (criterion ticked), a public syllabus, and a labelling process (Claude drafts blind, owner reviews). Real syllabus (Pondicherry University B.Tech CSE 2023-24) uploaded and parsed: fixed two parser bugs (two-digit course codes, reference lists read as content) and three ambiguous aliases (ruby, bootstrap, "system design"); all postings re-extracted, curriculum re-graded. Draft labels for 120 postings: provisional F1 0.955. 185 tests pass. 6 of 8 criteria met; open: owner label review → final F1 + CI threshold → phase gate. |
+| 2026-11-21 | Owner review feedback applied. Taxonomy 110 → 118 skills (test automation split from unit testing; manual, exploratory and regression testing; React Native; Tailwind CSS; Pega; Pega Smart Dispute), no slug removed. Role `software-development-manager` added (36 previously unclassified postings), `reclassify-roles` command. Labelling rules revised (company descriptions and role names in titles not labelled). Labelling page: review flags, explicit review marks, navigation, highlighting, JSONL restore; export keeps the same schema and records unreviewed rows; evaluator rejects duplicate ids. All postings re-extracted. Provisional F1 on the unreviewed draft 0.921 (stale draft labels; flagged for review). |
+| 2026-11-21 | Owner delivered the reviewed ground truth (`extraction_v1.jsonl`, 120 postings, git-ignored). Evaluated with no records skipped: micro P 0.908 / R 0.943 / **F1 0.925** (95 % CI 0.893 to 0.953), macro F1 0.812 (all skills) / 0.912 (labelled skills). Pipeline cross-check: identical predictions for all 120. 17 of 32 errors come from labels that predate the 2026-11-21 skills. Report: `reports/extraction_v1_eval.md`. Evaluator gained per-skill and macro metrics. F1 criterion ticked; 7 of 8 criteria met. The 8th, the phase gate, is open: CI threshold agreement and a green CI run. |
+| 2026-11-21 | Owner decisions: F1 gate threshold 0.89, run locally before each phase closes (labelled set stays private); optional changes deferred. Local gate passed (F1 0.9252). Phase 1 PR opened for review; Phase 1 is not complete until it is reviewed, merged and CI is green. |

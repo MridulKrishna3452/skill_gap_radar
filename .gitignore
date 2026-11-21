@@ -34,3 +34,11 @@ uploads/
 Thumbs.db
 .idea/
 .vscode/
+
+# Eval-set working files: they contain Adzuna posting text. Keep them local until it is
+# decided whether Adzuna's terms allow publishing their snippets (see data/eval_sets/README.md).
+data/eval_sets/*.unlabelled.jsonl
+data/eval_sets/*.draft.jsonl
+# The labelled ground truth contains Adzuna text too; reports/ holds only ids and metrics.
+data/eval_sets/extraction_v1.jsonl
+data/eval_sets/labeller.html

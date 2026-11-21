@@ -32,7 +32,8 @@ from spacy.util import filter_spans
 
 from app.services.extraction.requirement import Requirement, RequirementLocator, strongest
 
-EXTRACTOR_VERSION = "2.0"
+# Bump on any change to matching logic, so stored postings are re-extracted.
+EXTRACTOR_VERSION = "2.1"
 WINDOW = 15
 NEIGHBOR_WINDOW = 8
 _LIST_BEFORE = frozenset({",", "/", "(", "|", ";", "•", "&", "-", "*", ":", "·", "–"})
@@ -112,6 +113,18 @@ class SkillExtractor:
                 key = f"{skill.id}|{normalize_alias(alias.alias)}"
                 self._lookup[key] = (skill, alias)
                 self.matcher.add(key, [self.nlp.make_doc(alias.alias)])
+        # Aliases that are the start of another skill's alias ("java" / "javascript",
+        # "c" / "c++", "r" / "react"). Cut off by a truncation ellipsis ("Java…"), they may be
+        # that other skill, so such matches are dropped (Adzuna snippets end in "…").
+        owners: dict[str, set[int]] = {}
+        for skill in skills:
+            for alias in skill.aliases:
+                owners.setdefault(normalize_alias(alias.alias), set()).add(skill.id)
+        self._truncation_ambiguous = {
+            a
+            for a, ids in owners.items()
+            if any(o != a and o.startswith(a) and not (owners[o] <= ids) for o in owners)
+        }
 
     @cached_property
     def version(self) -> str:
@@ -195,6 +208,9 @@ class SkillExtractor:
 
         out: list[tuple[SkillSpec, Evidence]] = []
         for span, skill, alias in resolved:
+            truncated = text[span.end_char :].startswith(("…", "..."))
+            if truncated and normalize_alias(alias.alias) in self._truncation_ambiguous:
+                continue
             if alias.requires_context:
                 rule = self._disambiguate(doc, span, skill, alias, anchors)
                 if rule is None:

@@ -1,7 +1,6 @@
 """End-to-end Phase 1 pipeline against real Postgres: ingestion (mocked Adzuna), dedup,
 extraction, demand, curriculum upload/parse, gap and recommendations."""
 
-import os
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import Any
@@ -25,6 +24,7 @@ from app.models import (
 )
 from app.services.analytics.demand import refresh_monthly_demand
 from app.services.curriculum.service import parse_document
+from app.services.extraction.extractor import EXTRACTOR_VERSION
 from app.services.extraction.service import extract_pending
 from app.services.ingestion.base import RawPosting
 from app.services.ingestion.runner import create_run, execute_run, get_or_create_source
@@ -169,6 +169,26 @@ async def test_cross_source_duplicate_content_is_skipped(factory: Factory) -> No
     await load(factory, [posting(1, "Python and SQL")], key="a")
     await load(factory, [posting(1, "Python and SQL")], key="b")
     assert await count(factory, JobPosting) == 1
+
+
+async def test_reclassify_roles_updates_stored_postings(factory: Factory) -> None:
+    from app.models import Role
+    from app.services.roles import reclassify_postings
+
+    await load(factory, [posting(1, "Python", title="Software Development Manager")])
+    async with factory() as s:
+        # Simulate a posting ingested before the role existed.
+        p = await s.scalar(select(JobPosting))
+        assert p is not None
+        p.role_id = None
+        await s.commit()
+        first = await reclassify_postings(s)
+        await s.commit()
+        again = await reclassify_postings(s)
+        role = await s.scalar(select(Role.slug).join(JobPosting, JobPosting.role_id == Role.id))
+    assert first == {"postings": 1, "changed": 1}
+    assert again == {"postings": 1, "changed": 0}
+    assert role == "software-development-manager"
 
 
 async def test_synthetic_sources_are_excluded_from_analytics(
@@ -385,7 +405,7 @@ async def test_jobs_endpoint_pagination_and_filters(factory: Factory, api: Async
 
     job_id = page["items"][0]["id"]
     detail = (await api.get(f"/api/v1/jobs/{job_id}")).json()
-    assert detail["description"] and detail["extractor_version"].startswith("2.0+")
+    assert detail["description"] and detail["extractor_version"].startswith(f"{EXTRACTOR_VERSION}+")
     ev = detail["skills"][0]["evidence"][0]
     assert {"field", "start", "end", "text", "rule"} <= set(ev)
     missing = await api.get("/api/v1/jobs/999999")
@@ -444,8 +464,6 @@ async def test_ingestion_endpoints(api: AsyncClient, queue: RecordingQueue) -> N
     sources = (await api.get("/api/v1/sources")).json()
     assert [s["key"] for s in sources] == ["adzuna"]
     r = await api.post("/api/v1/ingestion/runs", json={"source": "adzuna"})
-    if os.getenv("ADZUNA_APP_ID"):
-        pytest.skip("a real Adzuna key is configured in this environment")
     assert r.status_code == 503 and r.json()["error"]["code"] == "service_unavailable"
     assert queue.sent == []
     assert (await api.get("/api/v1/ingestion/runs")).json()["total"] == 0

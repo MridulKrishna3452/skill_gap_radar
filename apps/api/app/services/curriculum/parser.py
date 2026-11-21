@@ -70,9 +70,20 @@ class Line:
 _COURSE_LABEL = re.compile(
     r"^(?:course|subject|paper)(?:\s+(?:title|name))?\s*[:\-–]\s*(?P<rest>.{3,})$", re.I
 )
+# Two-digit codes occur too ("CSH01" honours, "CSM03" minor courses). Outcome labels
+# ("CO 12", "PO1") look like codes and are excluded.
 _COURSE_CODE = re.compile(
-    r"^(?:course\s+code\s*[:\-–]?\s*)?(?P<code>[A-Z]{2,6}[\s\-]?\d{3,4}[A-Z]?)\b\s*[:\-–.)]?\s*"
+    r"^(?:course\s+code\s*[:\-–]?\s*)?(?!(?:CO|PO|PSO)[\s\-]?\d)"
+    r"(?P<code>[A-Z]{2,6}[\s\-]?\d{2,4}[A-Z]?)\b\s*[:\-–.)]?\s*"
     r"(?P<title>[A-Za-z][^\n]{2,150})?$"
+)
+# Sections that follow a course's last unit. Book and course titles listed there ("Computer
+# Networking: A Top-Down Approach") are not syllabus content, so a unit ends at them.
+_UNIT_END = re.compile(
+    r"^(?:text\s*books?|text|references?|reference\s+books?|suggested\s+readings?|"
+    r"further\s+readings?|bibliography|online(?:\s*/\s*nptel)?(?:\s+courses?)?|nptel|"
+    r"web\s*(?:resources|references|links)|e-?\s*resources)\s*(?P<colon>:)?\s*(?P<rest>.*)$",
+    re.I,
 )
 _UNIT = re.compile(
     r"^(?P<kind>unit|module|chapter|block)\s*[-–:]?\s*(?P<num>\d{1,2}|[ivxlc]{1,6})\b"
@@ -140,6 +151,15 @@ def _add_unit_line(unit: ParsedUnit, text: str, in_outcomes: bool) -> bool:
     return False
 
 
+def _ends_unit(text: str, heading_like: bool) -> bool:
+    """A "Text Books" / "References" / "Online courses" label: followed by a colon, or alone
+    on a heading-styled line ("Text Mining" or a plain "References to ..." sentence is not)."""
+    m = _UNIT_END.match(text)
+    if m is None:
+        return False
+    return bool(m.group("colon")) or (heading_like and not m.group("rest"))
+
+
 def _body_size(lines: list[Line]) -> float:
     """Median font size weighted by characters: the size of ordinary body text."""
     weights: list[float] = []
@@ -179,6 +199,9 @@ def parse_regex(lines: list[Line], fallback_title: str) -> list[ParsedCourse]:
             course.units.append(unit)
             in_outcomes = False
             continue
+        if unit is not None and _ends_unit(text, heading_like):
+            unit, in_outcomes = None, False
+            continue
         if unit is not None:
             in_outcomes = _add_unit_line(unit, text, in_outcomes)
     return [c for c in courses if c.units]
@@ -207,6 +230,9 @@ def parse_layout(lines: list[Line], fallback_title: str) -> list[ParsedCourse]:
     in_outcomes = False
     for line in lines:
         if _NOISE.match(line.text):
+            continue
+        if _ends_unit(line.text, is_heading(line)):
+            unit, in_outcomes = None, False
             continue
         if is_heading(line) and course_size is not None and line.size == course_size:
             code_value, title = _split_code(line.text)

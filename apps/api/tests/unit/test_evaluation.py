@@ -35,6 +35,31 @@ def test_precision_recall_f1(extractor: SkillExtractor) -> None:
     assert r.f1 == pytest.approx(2 / 3)
     assert r.per_skill["docker"] == {"fn": 1}
 
+    # Per skill, hand-computed: python 1/1/1, sql (FP only) 0/0/0, docker (FN only) 0/0/0,
+    # kafka 1/1/1.
+    s = r.skill_scores()
+    assert s["python"] == {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+    }
+    assert (s["sql"]["support"], s["sql"]["precision"], s["sql"]["f1"]) == (0, 0.0, 0.0)
+    assert (s["docker"]["predicted"], s["docker"]["recall"]) == (0, 0.0)
+    # Macro over all 4 labelled-or-predicted skills: (1 + 0 + 0 + 1) / 4.
+    assert r.macro() == {"skills": 4, "precision": 0.5, "recall": 0.5, "f1": 0.5}
+    # Macro over the 3 labelled skills (python, docker, kafka): (1 + 0 + 1) / 3.
+    assert r.macro(labelled_only=True) == {
+        "skills": 3,
+        "precision": 0.6667,
+        "recall": 0.6667,
+        "f1": 0.6667,
+    }
+
 
 def test_implied_skills_are_not_scored(extractor: SkillExtractor) -> None:
     r = evaluate(extractor, [LabelledPosting("1", "", "PostgreSQL", {"postgresql"})])
@@ -57,6 +82,14 @@ def test_load_rejects_unknown_slugs(tmp_path: Path) -> None:
     f = tmp_path / "set.jsonl"
     f.write_text(json.dumps({"id": "1", "title": "", "description": "", "skills": ["nope"]}))
     with pytest.raises(ValueError, match="unknown skill slugs"):
+        load_eval_set(f, {"python"})
+
+
+def test_load_rejects_duplicate_postings(tmp_path: Path) -> None:
+    row = json.dumps({"id": "1", "title": "", "description": "", "skills": ["python"]})
+    f = tmp_path / "set.jsonl"
+    f.write_text(f"{row}\n{row}\n")
+    with pytest.raises(ValueError, match="duplicate posting id 1"):
         load_eval_set(f, {"python"})
 
 

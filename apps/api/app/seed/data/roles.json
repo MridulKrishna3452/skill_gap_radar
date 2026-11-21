@@ -40,6 +40,9 @@
     {"slug": "qa-engineer", "name": "QA Engineer", "match_priority": 46,
      "title_patterns": ["qa engineer", "quality assurance", "test engineer", "sdet", "automation tester", "qa analyst", "software tester", "qa automation", "test automation"],
      "core_skills": []},
+    {"slug": "software-development-manager", "name": "Software Development Manager", "match_priority": 80,
+     "title_patterns": ["software development manager", "manager, software development", "manager - software development", "manager software development", "engineering manager", "software engineering manager", "manager software engineering", "manager, software engineering", "director of engineering", "director, engineering", "head of engineering", "vp engineering", "vp of engineering"],
+     "core_skills": []},
     {"slug": "security-engineer", "name": "Security Engineer", "match_priority": 52,
      "title_patterns": ["security engineer", "security analyst", "cybersecurity", "cyber security", "penetration tester", "soc analyst", "information security", "appsec"],
      "core_skills": []}
